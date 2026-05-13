@@ -41,8 +41,10 @@ properties:
     default: 0
     description: Y coordinate of the rotation origin.
 
-  linked-devices:
-    type: phandles
+  linked-device-identifiers:
+    type: string-array
+    required: true
 
   linked-subsystems:
     type: string-array
+    required: true

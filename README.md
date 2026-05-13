@@ -50,21 +50,26 @@ Trackballs use `x`, `y`, and `size`. Common ball sizes are `34` and `25`.
         x = <425>;
         y = <125>;
 
-        linked-devices = <&trackball_sensor &trackball_button>;
+        linked-device-identifiers = "trackball_sensor", "trackball_button";
         linked-subsystems = "zmk__trackball", "zmk__pointing_buttons";
     };
 };
 ```
 
-### Rotary Encoder
+### Rotary Encoders
 
-Rotary encoders use `x`, `y`, and `size`.
+Rotary encoders are bundled so each physical encoder can be mapped to ZMK's official rotary encoder array. The position in the `encoders` phandle array is used as the encoder index. Each encoder uses `x`, `y`, and `size`.
 
 ```dts
 / {
+    rotary_encoders0: rotary_encoders0 {
+        compatible = "zmk,physical-layout-rotary-encoders";
+        display-name = "Rotary Encoders";
+        encoders = <&encoder0>;
+    };
+
     encoder0: encoder0 {
         compatible = "zmk,physical-layout-rotary-encoder";
-        display-name = "Thumb Encoder";
         size = <18>;
         x = <600>;
         y = <80>;
@@ -88,6 +93,8 @@ Touch pads use rectangular geometry and optional rotation fields.
         r = <0>;
         rx = <0>;
         ry = <0>;
+        linked-device-identifiers = "touchpad_input";
+        linked-subsystems = "zmk__touch_pad";
     };
 };
 ```
@@ -106,14 +113,18 @@ Use `zmk,physical-layout-custom-module` for module types that do not have a dedi
         height = <80>;
         x = <160>;
         y = <40>;
+        linked-device-identifiers = "status_display";
+        linked-subsystems = "zmk__display";
     };
 };
 ```
 
-`linked-devices` and `linked-subsystems` are index-matched arrays. Each link sent to Studio contains:
+`linked-device-identifiers` and `linked-subsystems` are index-matched arrays. Use the custom Studio RPC device identifier, not the devicetree node name. Each link sent to Studio contains:
 
-- Device instance identifier: derived from the linked devicetree node name or label.
+- Device instance identifier: copied from `linked-device-identifiers`.
 - Device type identifier: the custom Studio RPC subsystem identifier from `linked-subsystems`.
+
+The RPC response includes `enabled` for every physical device and rotary encoder. Rotary encoders are reported in `rotary_encoders` array order so the index maps directly to ZMK's official rotary encoder array. These values follow the corresponding devicetree node `status`; nodes with `status = "disabled"` are still reported with `enabled = false`.
 
 Rotation fields are supported by touch pads and custom modules:
 

@@ -27,7 +27,10 @@ message LinkedDevice {
 
 message Trackball { PointSizePhysicalAttrs attrs = 1; }
 
-message RotaryEncoder { PointSizePhysicalAttrs attrs = 1; }
+message RotaryEncoder {
+    bool enabled = 1;
+    PointSizePhysicalAttrs attrs = 2;
+}
 
 message TouchPad { RectPhysicalAttrs attrs = 1; }
 
@@ -40,15 +43,18 @@ message PhysicalDevice {
     string identifier = 1;
     string display_name = 2;
     repeated LinkedDevice links = 3;
+    bool enabled = 8;
     oneof device_type {
         Trackball trackball = 4;
-        RotaryEncoder rotary_encoder = 5;
         TouchPad touch_pad = 6;
         CustomModule custom_module = 7;
     }
 }
 
-message GetPhysicalLayoutResponse { repeated PhysicalDevice devices = 1; }
+message GetPhysicalLayoutResponse {
+    repeated PhysicalDevice devices = 1;
+    repeated RotaryEncoder rotary_encoders = 2;
+}
 
 message Request {
     oneof request_type { GetPhysicalLayoutRequest get_physical_layout = 1; }

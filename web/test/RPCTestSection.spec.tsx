@@ -33,6 +33,7 @@ const mockLayoutResponses = () => {
                     {
                       identifier: "/trackball0",
                       displayName: "Primary Trackball",
+                      enabled: true,
                       trackball: {
                         attrs: {
                           x: 425,
@@ -42,16 +43,17 @@ const mockLayoutResponses = () => {
                       },
                       links: [
                         {
-                          deviceIdentifier: "kscan",
+                          deviceIdentifier: "trackball_sensor",
                           subsystemIdentifier: "zmk__trackball",
                         },
                         {
-                          deviceIdentifier: "button",
+                          deviceIdentifier: "trackball_button",
                           subsystemIdentifier: "zmk__pointing_buttons",
                         },
                       ],
                     },
                   ],
+                  rotaryEncoders: [],
                 },
               }).finish(),
             },
@@ -108,7 +110,7 @@ describe("PhysicalLayoutSection Component", () => {
       expect(screen.getByText(/Refresh/i)).toBeInTheDocument();
       expect(
         screen.getByText(
-          /kscan \(zmk__trackball\), button \(zmk__pointing_buttons\)/i
+          /trackball_sensor \(zmk__trackball\), trackball_button \(zmk__pointing_buttons\)/i
         )
       ).toBeInTheDocument();
     });

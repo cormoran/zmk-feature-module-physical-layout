@@ -1,0 +1,16 @@
+# Copyright (c) 2026 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Bundles physical rotary encoders for mapping to ZMK's official encoder indexes.
+
+compatible: "zmk,physical-layout-rotary-encoders"
+
+properties:
+  display-name:
+    type: string
+    required: true
+
+  encoders:
+    type: phandles
+    required: true
+    description: Rotary encoder physical definitions in the order used for mapping.

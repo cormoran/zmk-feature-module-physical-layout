@@ -75,7 +75,7 @@ class WestCommandsTests(unittest.TestCase):
                     ],
                     device=[
                         "DT_COMPAT_HAS_OKAY_zmk_physical_layout_trackball",
-                        "DT_COMPAT_HAS_OKAY_zmk_physical_layout_rotary_encoder",
+                        "DT_COMPAT_HAS_OKAY_zmk_physical_layout_rotary_encoders",
                         "DT_COMPAT_HAS_OKAY_zmk_physical_layout_touch_pad",
                         "DT_COMPAT_HAS_OKAY_zmk_physical_layout_custom_module",
                     ],

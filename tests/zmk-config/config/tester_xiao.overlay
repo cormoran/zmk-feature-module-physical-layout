@@ -10,15 +10,28 @@
 		size = <34>;
 		x = <425>;
 		y = <125>;
-		linked-devices = <&kscan0 &transform0>;
+		linked-device-identifiers = "trackball_sensor", "trackball_button";
 		linked-subsystems = "zmk__trackball", "zmk__pointing_buttons";
+	};
+
+	rotary_encoders0: rotary_encoders0 {
+		compatible = "zmk,physical-layout-rotary-encoders";
+		display-name = "Rotary Encoders";
+		encoders = <&encoder0 &encoder1>;
 	};
 
 	encoder0: encoder0 {
 		compatible = "zmk,physical-layout-rotary-encoder";
-		display-name = "Thumb Encoder";
 		size = <18>;
 		x = <600>;
+		y = <80>;
+	};
+
+	encoder1: encoder1 {
+		compatible = "zmk,physical-layout-rotary-encoder";
+		status = "disabled";
+		size = <18>;
+		x = <720>;
 		y = <80>;
 	};
 
@@ -32,6 +45,8 @@
 		r = <0>;
 		rx = <0>;
 		ry = <0>;
+		linked-device-identifiers = "touchpad_input";
+		linked-subsystems = "zmk__touch_pad";
 	};
 
 	custom_module0: custom_module0 {
@@ -42,5 +57,7 @@
 		height = <80>;
 		x = <160>;
 		y = <40>;
+		linked-device-identifiers = "status_display";
+		linked-subsystems = "zmk__display";
 	};
 };
