@@ -69,6 +69,7 @@ describe("App Component", () => {
                         {
                           identifier: "/trackball0",
                           displayName: "Primary Trackball",
+                          enabled: true,
                           trackball: {
                             attrs: {
                               x: 425,
@@ -78,11 +79,11 @@ describe("App Component", () => {
                           },
                           links: [
                             {
-                              deviceIdentifier: "kscan",
+                              deviceIdentifier: "trackball_sensor",
                               subsystemIdentifier: "zmk__trackball",
                             },
                             {
-                              deviceIdentifier: "button",
+                              deviceIdentifier: "trackball_button",
                               subsystemIdentifier: "zmk__pointing_buttons",
                             },
                           ],

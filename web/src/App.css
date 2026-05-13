@@ -115,6 +115,14 @@
   pointer-events: none;
 }
 
+.layout-module-disabled {
+  opacity: 0.45;
+}
+
+.layout-module-disabled .layout-module {
+  stroke-dasharray: 12 8;
+}
+
 .module-list {
   display: grid;
   gap: 0.75rem;

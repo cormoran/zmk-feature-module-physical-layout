@@ -79,67 +79,99 @@ const MM_TO_LAYOUT_UNITS = 4;
 
 type ModulePresentation = {
   kind: "trackball" | "rotary-encoder" | "touch-pad" | "custom-module";
+  identifier: string;
+  displayName: string;
+  enabled: boolean;
   label: string;
   attrs: RectPhysicalAttrs;
   sizeText: string;
+  links: PhysicalDevice["links"];
 };
 
-function modulePresentation(module: PhysicalDevice): ModulePresentation | null {
+function modulePresentations(module: PhysicalDevice): ModulePresentation[] {
   if (module.trackball?.attrs) {
     const size = module.trackball.attrs.size * MM_TO_LAYOUT_UNITS;
-    return {
-      kind: "trackball",
-      label: "trackball",
-      attrs: {
-        x: module.trackball.attrs.x,
-        y: module.trackball.attrs.y,
-        width: size,
-        height: size,
-        r: 0,
-        rx: 0,
-        ry: 0,
+    return [
+      {
+        kind: "trackball",
+        identifier: module.identifier,
+        displayName: module.displayName,
+        enabled: module.enabled,
+        label: "trackball",
+        attrs: {
+          x: module.trackball.attrs.x,
+          y: module.trackball.attrs.y,
+          width: size,
+          height: size,
+          r: 0,
+          rx: 0,
+          ry: 0,
+        },
+        sizeText: `${module.trackball.attrs.size} mm`,
+        links: module.links,
       },
-      sizeText: `${module.trackball.attrs.size} mm`,
-    };
+    ];
   }
 
-  if (module.rotaryEncoder?.attrs) {
-    const size = module.rotaryEncoder.attrs.size * MM_TO_LAYOUT_UNITS;
-    return {
-      kind: "rotary-encoder",
-      label: "rotary encoder",
-      attrs: {
-        x: module.rotaryEncoder.attrs.x,
-        y: module.rotaryEncoder.attrs.y,
-        width: size,
-        height: size,
-        r: 0,
-        rx: 0,
-        ry: 0,
-      },
-      sizeText: `${module.rotaryEncoder.attrs.size} mm`,
-    };
+  if (module.rotaryEncoders) {
+    return module.rotaryEncoders.encoders.flatMap((encoder) => {
+      if (!encoder.attrs) return [];
+
+      const size = encoder.attrs.size * MM_TO_LAYOUT_UNITS;
+      return [
+        {
+          kind: "rotary-encoder" as const,
+          identifier: `${module.identifier}:${encoder.index}`,
+          displayName: `${module.displayName} ${encoder.index}`,
+          enabled: module.enabled && encoder.enabled,
+          label: `rotary encoder ${encoder.index}`,
+          attrs: {
+            x: encoder.attrs.x,
+            y: encoder.attrs.y,
+            width: size,
+            height: size,
+            r: 0,
+            rx: 0,
+            ry: 0,
+          },
+          sizeText: `${encoder.attrs.size} mm`,
+          links: module.links,
+        },
+      ];
+    });
   }
 
   if (module.touchPad?.attrs) {
-    return {
-      kind: "touch-pad",
-      label: "touch pad",
-      attrs: module.touchPad.attrs,
-      sizeText: `${module.touchPad.attrs.width} x ${module.touchPad.attrs.height}`,
-    };
+    return [
+      {
+        kind: "touch-pad",
+        identifier: module.identifier,
+        displayName: module.displayName,
+        enabled: module.enabled,
+        label: "touch pad",
+        attrs: module.touchPad.attrs,
+        sizeText: `${module.touchPad.attrs.width} x ${module.touchPad.attrs.height}`,
+        links: module.links,
+      },
+    ];
   }
 
   if (module.customModule?.attrs) {
-    return {
-      kind: "custom-module",
-      label: module.customModule.type || "custom module",
-      attrs: module.customModule.attrs,
-      sizeText: `${module.customModule.attrs.width} x ${module.customModule.attrs.height}`,
-    };
+    return [
+      {
+        kind: "custom-module",
+        identifier: module.identifier,
+        displayName: module.displayName,
+        enabled: module.enabled,
+        label: module.customModule.type || "custom module",
+        attrs: module.customModule.attrs,
+        sizeText: `${module.customModule.attrs.width} x ${module.customModule.attrs.height}`,
+        links: module.links,
+      },
+    ];
   }
 
-  return null;
+  return [];
 }
 
 function geometryOf(item: KeyPhysicalAttrs | ModulePresentation) {
@@ -147,12 +179,10 @@ function geometryOf(item: KeyPhysicalAttrs | ModulePresentation) {
 }
 
 function buildViewBox(keys: KeyPhysicalAttrs[], modules: PhysicalDevice[]) {
-  const modulePresentations = modules
-    .map(modulePresentation)
-    .filter((module): module is ModulePresentation => module !== null);
+  const presentations = modules.flatMap(modulePresentations);
   const geometries: Array<KeyPhysicalAttrs | RectPhysicalAttrs> = [
     ...keys,
-    ...modulePresentations.map((module) => module.attrs),
+    ...presentations.map((module) => module.attrs),
   ];
 
   if (!geometries.length) {
@@ -248,6 +278,10 @@ export function PhysicalLayoutSection() {
     () => buildViewBox(layout.keys, layout.modules),
     [layout.keys, layout.modules]
   );
+  const physicalModules = useMemo(
+    () => layout.modules.flatMap(modulePresentations),
+    [layout.modules]
+  );
 
   if (!zmkApp) return null;
 
@@ -270,7 +304,7 @@ export function PhysicalLayoutSection() {
         <div>
           <h2>Physical Layout</h2>
           <p>
-            {layout.keys.length} keys, {layout.modules.length} modules
+            {layout.keys.length} keys, {physicalModules.length} modules
           </p>
         </div>
         <button
@@ -300,10 +334,7 @@ export function PhysicalLayoutSection() {
             transform={transformFor(key)}
           />
         ))}
-        {layout.modules.map((module) => {
-          const presentation = modulePresentation(module);
-          if (!presentation) return null;
-
+        {physicalModules.map((presentation) => {
           const cornerRadius =
             presentation.kind === "trackball" ||
             presentation.kind === "rotary-encoder"
@@ -311,7 +342,11 @@ export function PhysicalLayoutSection() {
               : 8;
 
           return (
-            <g key={module.identifier} transform={transformFor(presentation)}>
+            <g
+              className={presentation.enabled ? "" : "layout-module-disabled"}
+              key={presentation.identifier}
+              transform={transformFor(presentation)}
+            >
               <rect
                 className={`layout-module layout-module-${presentation.kind}`}
                 x={presentation.attrs.x}
@@ -327,7 +362,7 @@ export function PhysicalLayoutSection() {
                 textAnchor="middle"
                 dominantBaseline="middle"
               >
-                {module.displayName}
+                {presentation.displayName}
               </text>
             </g>
           );
@@ -336,17 +371,17 @@ export function PhysicalLayoutSection() {
 
       {error && <p className="error-message">{error}</p>}
 
-      {layout.modules.length > 0 && (
+      {physicalModules.length > 0 && (
         <div className="module-list">
-          {layout.modules.map((module) => {
-            const presentation = modulePresentation(module);
-            if (!presentation) return null;
-
+          {physicalModules.map((presentation) => {
             return (
-              <article className="module-row" key={module.identifier}>
+              <article className="module-row" key={presentation.identifier}>
                 <div>
-                  <h3>{module.displayName}</h3>
-                  <p>{presentation.label}</p>
+                  <h3>{presentation.displayName}</h3>
+                  <p>
+                    {presentation.label}
+                    {presentation.enabled ? "" : " disabled"}
+                  </p>
                 </div>
                 <dl>
                   <div>
@@ -362,8 +397,8 @@ export function PhysicalLayoutSection() {
                   <div>
                     <dt>Links</dt>
                     <dd>
-                      {module.links.length
-                        ? module.links
+                      {presentation.links.length
+                        ? presentation.links
                             .map(
                               (link) =>
                                 `${link.deviceIdentifier} (${link.subsystemIdentifier})`
