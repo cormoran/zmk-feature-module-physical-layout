@@ -9,8 +9,6 @@
 #include <zephyr/sys/util.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-#define DT_DRV_COMPAT zmk_physical_layout_device
-
 static struct zmk_rpc_custom_subsystem_meta physical_layouts_feature_meta = {
     ZMK_RPC_CUSTOM_SUBSYSTEM_UI_URLS(
         "http://cormoran.github.io/zmk-feature-module-physical-layout/"),
@@ -68,7 +66,10 @@ static bool physical_layouts_rpc_handle_request(const zmk_custom_CallRequest *ra
                      DT_PROP_LEN_OR(node_id, linked_subsystems, 0),                                \
                  "linked-devices and linked-subsystems must have the same length")
 
-DT_FOREACH_STATUS_OKAY(DT_DRV_COMPAT, PHYSICAL_LAYOUT_LINK_ASSERT);
+DT_FOREACH_STATUS_OKAY(zmk_physical_layout_trackball, PHYSICAL_LAYOUT_LINK_ASSERT);
+DT_FOREACH_STATUS_OKAY(zmk_physical_layout_rotary_encoder, PHYSICAL_LAYOUT_LINK_ASSERT);
+DT_FOREACH_STATUS_OKAY(zmk_physical_layout_touch_pad, PHYSICAL_LAYOUT_LINK_ASSERT);
+DT_FOREACH_STATUS_OKAY(zmk_physical_layout_custom_module, PHYSICAL_LAYOUT_LINK_ASSERT);
 
 #define PHYSICAL_LAYOUT_LINK_ENCODE(idx, node_id)                                                  \
     do {                                                                                           \
@@ -98,25 +99,20 @@ DT_FOREACH_STATUS_OKAY(DT_DRV_COMPAT, PHYSICAL_LAYOUT_LINK_ASSERT);
         return true;                                                                               \
     }
 
-DT_FOREACH_STATUS_OKAY(DT_DRV_COMPAT, PHYSICAL_LAYOUT_LINK_ENCODER);
+DT_FOREACH_STATUS_OKAY(zmk_physical_layout_trackball, PHYSICAL_LAYOUT_LINK_ENCODER);
+DT_FOREACH_STATUS_OKAY(zmk_physical_layout_rotary_encoder, PHYSICAL_LAYOUT_LINK_ENCODER);
+DT_FOREACH_STATUS_OKAY(zmk_physical_layout_touch_pad, PHYSICAL_LAYOUT_LINK_ENCODER);
+DT_FOREACH_STATUS_OKAY(zmk_physical_layout_custom_module, PHYSICAL_LAYOUT_LINK_ENCODER);
 
-#define PHYSICAL_LAYOUT_DEVICE_ENCODE(node_id)                                                     \
+#define PHYSICAL_LAYOUT_DEVICE_INIT(node_id)                                                       \
+    zmk_physical_layouts_PhysicalDevice device = zmk_physical_layouts_PhysicalDevice_init_zero;    \
+    snprintf(device.identifier, sizeof(device.identifier), "%s", DT_NODE_FULL_NAME(node_id));      \
+    snprintf(device.display_name, sizeof(device.display_name), "%s",                               \
+             DT_PROP(node_id, display_name));                                                      \
+    device.links.funcs.encode = PHYSICAL_LAYOUT_LINK_ENCODER_NAME(node_id)
+
+#define PHYSICAL_LAYOUT_DEVICE_ENCODE()                                                            \
     do {                                                                                           \
-        zmk_physical_layouts_PhysicalDevice device =                                               \
-            zmk_physical_layouts_PhysicalDevice_init_zero;                                         \
-        snprintf(device.identifier, sizeof(device.identifier), "%s", DT_NODE_FULL_NAME(node_id));  \
-        snprintf(device.display_name, sizeof(device.display_name), "%s",                           \
-                 DT_PROP(node_id, display_name));                                                  \
-        snprintf(device.type, sizeof(device.type), "%s", DT_PROP(node_id, device_type));           \
-        device.has_attrs = true;                                                                   \
-        device.attrs.width = DT_PROP(node_id, width);                                              \
-        device.attrs.height = DT_PROP(node_id, height);                                            \
-        device.attrs.x = DT_PROP(node_id, x);                                                      \
-        device.attrs.y = DT_PROP(node_id, y);                                                      \
-        device.attrs.r = DT_PROP(node_id, r);                                                      \
-        device.attrs.rx = DT_PROP(node_id, rx);                                                    \
-        device.attrs.ry = DT_PROP(node_id, ry);                                                    \
-        device.links.funcs.encode = PHYSICAL_LAYOUT_LINK_ENCODER_NAME(node_id);                    \
         if (!pb_encode_tag_for_field(stream, field)) {                                             \
             LOG_WRN("Failed to encode physical device tag");                                       \
             return false;                                                                          \
@@ -125,13 +121,71 @@ DT_FOREACH_STATUS_OKAY(DT_DRV_COMPAT, PHYSICAL_LAYOUT_LINK_ENCODER);
             LOG_WRN("Failed to encode physical device submessage");                                \
             return false;                                                                          \
         }                                                                                          \
+    } while (false)
+
+#define PHYSICAL_LAYOUT_TRACKBALL_ENCODE(node_id)                                                  \
+    do {                                                                                           \
+        PHYSICAL_LAYOUT_DEVICE_INIT(node_id);                                                      \
+        device.which_device_type = zmk_physical_layouts_PhysicalDevice_trackball_tag;              \
+        device.device_type.trackball.has_attrs = true;                                             \
+        device.device_type.trackball.attrs.x = DT_PROP(node_id, x);                                \
+        device.device_type.trackball.attrs.y = DT_PROP(node_id, y);                                \
+        device.device_type.trackball.attrs.size = DT_PROP(node_id, size);                          \
+        PHYSICAL_LAYOUT_DEVICE_ENCODE();                                                           \
+    } while (false);
+
+#define PHYSICAL_LAYOUT_ROTARY_ENCODER_ENCODE(node_id)                                             \
+    do {                                                                                           \
+        PHYSICAL_LAYOUT_DEVICE_INIT(node_id);                                                      \
+        device.which_device_type = zmk_physical_layouts_PhysicalDevice_rotary_encoder_tag;         \
+        device.device_type.rotary_encoder.has_attrs = true;                                        \
+        device.device_type.rotary_encoder.attrs.x = DT_PROP(node_id, x);                           \
+        device.device_type.rotary_encoder.attrs.y = DT_PROP(node_id, y);                           \
+        device.device_type.rotary_encoder.attrs.size = DT_PROP(node_id, size);                     \
+        PHYSICAL_LAYOUT_DEVICE_ENCODE();                                                           \
+    } while (false);
+
+#define PHYSICAL_LAYOUT_TOUCH_PAD_ENCODE(node_id)                                                  \
+    do {                                                                                           \
+        PHYSICAL_LAYOUT_DEVICE_INIT(node_id);                                                      \
+        device.which_device_type = zmk_physical_layouts_PhysicalDevice_touch_pad_tag;              \
+        device.device_type.touch_pad.has_attrs = true;                                             \
+        device.device_type.touch_pad.attrs.width = DT_PROP(node_id, width);                        \
+        device.device_type.touch_pad.attrs.height = DT_PROP(node_id, height);                      \
+        device.device_type.touch_pad.attrs.x = DT_PROP(node_id, x);                                \
+        device.device_type.touch_pad.attrs.y = DT_PROP(node_id, y);                                \
+        device.device_type.touch_pad.attrs.r = DT_PROP(node_id, r);                                \
+        device.device_type.touch_pad.attrs.rx = DT_PROP(node_id, rx);                              \
+        device.device_type.touch_pad.attrs.ry = DT_PROP(node_id, ry);                              \
+        PHYSICAL_LAYOUT_DEVICE_ENCODE();                                                           \
+    } while (false);
+
+#define PHYSICAL_LAYOUT_CUSTOM_MODULE_ENCODE(node_id)                                              \
+    do {                                                                                           \
+        PHYSICAL_LAYOUT_DEVICE_INIT(node_id);                                                      \
+        device.which_device_type = zmk_physical_layouts_PhysicalDevice_custom_module_tag;          \
+        snprintf(device.device_type.custom_module.type,                                            \
+                 sizeof(device.device_type.custom_module.type), "%s", DT_PROP(node_id, type));     \
+        device.device_type.custom_module.has_attrs = true;                                         \
+        device.device_type.custom_module.attrs.width = DT_PROP(node_id, width);                    \
+        device.device_type.custom_module.attrs.height = DT_PROP(node_id, height);                  \
+        device.device_type.custom_module.attrs.x = DT_PROP(node_id, x);                            \
+        device.device_type.custom_module.attrs.y = DT_PROP(node_id, y);                            \
+        device.device_type.custom_module.attrs.r = DT_PROP(node_id, r);                            \
+        device.device_type.custom_module.attrs.rx = DT_PROP(node_id, rx);                          \
+        device.device_type.custom_module.attrs.ry = DT_PROP(node_id, ry);                          \
+        PHYSICAL_LAYOUT_DEVICE_ENCODE();                                                           \
     } while (false);
 
 static bool encode_physical_devices(pb_ostream_t *stream, const pb_field_t *field,
                                     void *const *arg) {
     ARG_UNUSED(arg);
 
-    DT_FOREACH_STATUS_OKAY(DT_DRV_COMPAT, PHYSICAL_LAYOUT_DEVICE_ENCODE);
+    DT_FOREACH_STATUS_OKAY(zmk_physical_layout_trackball, PHYSICAL_LAYOUT_TRACKBALL_ENCODE);
+    DT_FOREACH_STATUS_OKAY(zmk_physical_layout_rotary_encoder,
+                           PHYSICAL_LAYOUT_ROTARY_ENCODER_ENCODE);
+    DT_FOREACH_STATUS_OKAY(zmk_physical_layout_touch_pad, PHYSICAL_LAYOUT_TOUCH_PAD_ENCODE);
+    DT_FOREACH_STATUS_OKAY(zmk_physical_layout_custom_module, PHYSICAL_LAYOUT_CUSTOM_MODULE_ENCODE);
     return true;
 }
 

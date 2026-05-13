@@ -1,0 +1,32 @@
+# Copyright (c) 2026 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Describes the physical location of a rotary encoder for custom ZMK Studio rendering.
+
+compatible: "zmk,physical-layout-rotary-encoder"
+
+properties:
+  display-name:
+    type: string
+    required: true
+
+  x:
+    type: int
+    required: true
+    description: X position in the same coordinate units as ZMK key physical layouts.
+
+  y:
+    type: int
+    required: true
+    description: Y position in the same coordinate units as ZMK key physical layouts.
+
+  size:
+    type: int
+    required: true
+    description: Rotary encoder diameter in millimeters.
+
+  linked-devices:
+    type: phandles
+
+  linked-subsystems:
+    type: string-array

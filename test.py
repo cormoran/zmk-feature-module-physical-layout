@@ -74,7 +74,10 @@ class WestCommandsTests(unittest.TestCase):
                         "CONFIG_ZMK_PHYSICAL_LAYOUTS_FEATURE_STUDIO_RPC=y",
                     ],
                     device=[
-                        "DT_COMPAT_HAS_OKAY_zmk_physical_layout_device",
+                        "DT_COMPAT_HAS_OKAY_zmk_physical_layout_trackball",
+                        "DT_COMPAT_HAS_OKAY_zmk_physical_layout_rotary_encoder",
+                        "DT_COMPAT_HAS_OKAY_zmk_physical_layout_touch_pad",
+                        "DT_COMPAT_HAS_OKAY_zmk_physical_layout_custom_module",
                     ],
                 ),
                 "physical_layout_board_without_rpc": ConfigAndDeviceTree(

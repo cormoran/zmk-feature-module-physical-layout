@@ -93,6 +93,21 @@
   stroke: #2c7a7b;
 }
 
+.layout-module-rotary-encoder {
+  fill: #fde68a;
+  stroke: #b7791f;
+}
+
+.layout-module-touch-pad {
+  fill: #c7d2fe;
+  stroke: #4c51bf;
+}
+
+.layout-module-custom-module {
+  fill: #e9d8fd;
+  stroke: #6b46c1;
+}
+
 .layout-module-label {
   fill: #102a43;
   font-size: 28px;

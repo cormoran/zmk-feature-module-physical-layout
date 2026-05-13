@@ -33,15 +33,12 @@ const mockLayoutResponses = () => {
                     {
                       identifier: "/trackball0",
                       displayName: "Primary Trackball",
-                      type: "trackball",
-                      attrs: {
-                        width: 150,
-                        height: 150,
-                        x: 425,
-                        y: 125,
-                        r: 0,
-                        rx: 0,
-                        ry: 0,
+                      trackball: {
+                        attrs: {
+                          x: 425,
+                          y: 125,
+                          size: 34,
+                        },
                       },
                       links: [
                         {

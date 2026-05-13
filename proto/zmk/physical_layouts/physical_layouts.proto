@@ -4,7 +4,13 @@ package zmk.physical_layouts;
 
 message GetPhysicalLayoutRequest {}
 
-message PhysicalAttrs {
+message PointSizePhysicalAttrs {
+    sint32 x = 1;
+    sint32 y = 2;
+    sint32 size = 3;
+}
+
+message RectPhysicalAttrs {
     sint32 width = 1;
     sint32 height = 2;
     sint32 x = 3;
@@ -19,12 +25,27 @@ message LinkedDevice {
     string subsystem_identifier = 2;
 }
 
+message Trackball { PointSizePhysicalAttrs attrs = 1; }
+
+message RotaryEncoder { PointSizePhysicalAttrs attrs = 1; }
+
+message TouchPad { RectPhysicalAttrs attrs = 1; }
+
+message CustomModule {
+    string type = 1;
+    RectPhysicalAttrs attrs = 2;
+}
+
 message PhysicalDevice {
     string identifier = 1;
     string display_name = 2;
-    string type = 3;
-    PhysicalAttrs attrs = 4;
-    repeated LinkedDevice links = 5;
+    repeated LinkedDevice links = 3;
+    oneof device_type {
+        Trackball trackball = 4;
+        RotaryEncoder rotary_encoder = 5;
+        TouchPad touch_pad = 6;
+        CustomModule custom_module = 7;
+    }
 }
 
 message GetPhysicalLayoutResponse { repeated PhysicalDevice devices = 1; }

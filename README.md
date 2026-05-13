@@ -35,16 +35,18 @@ CONFIG_ZMK_PHYSICAL_LAYOUTS_FEATURE_STUDIO_RPC=y
 
 ## Devicetree
 
-Define each non-key physical module with `compatible = "zmk,physical-layout-device"`. Coordinates use the same units as ZMK `zmk,physical-layout` key attributes.
+Define each non-key physical module with one of the dedicated compatibles below. Coordinates use the same layout coordinate space as ZMK `zmk,physical-layout` key attributes. `size` fields are in millimeters.
+
+### Trackball
+
+Trackballs use `x`, `y`, and `size`. Common ball sizes are `34` and `25`.
 
 ```dts
 / {
     trackball0: trackball0 {
-        compatible = "zmk,physical-layout-device";
+        compatible = "zmk,physical-layout-trackball";
         display-name = "Primary Trackball";
-        device-type = "trackball";
-        width = <150>;
-        height = <150>;
+        size = <34>;
         x = <425>;
         y = <125>;
 
@@ -54,12 +56,66 @@ Define each non-key physical module with `compatible = "zmk,physical-layout-devi
 };
 ```
 
+### Rotary Encoder
+
+Rotary encoders use `x`, `y`, and `size`.
+
+```dts
+/ {
+    encoder0: encoder0 {
+        compatible = "zmk,physical-layout-rotary-encoder";
+        display-name = "Thumb Encoder";
+        size = <18>;
+        x = <600>;
+        y = <80>;
+    };
+};
+```
+
+### Touch Pad
+
+Touch pads use rectangular geometry and optional rotation fields.
+
+```dts
+/ {
+    touchpad0: touchpad0 {
+        compatible = "zmk,physical-layout-touch-pad";
+        display-name = "Touch Pad";
+        width = <240>;
+        height = <180>;
+        x = <625>;
+        y = <180>;
+        r = <0>;
+        rx = <0>;
+        ry = <0>;
+    };
+};
+```
+
+### Custom Module
+
+Use `zmk,physical-layout-custom-module` for module types that do not have a dedicated compatible.
+
+```dts
+/ {
+    custom_module0: custom_module0 {
+        compatible = "zmk,physical-layout-custom-module";
+        display-name = "Status Display";
+        type = "display";
+        width = <220>;
+        height = <80>;
+        x = <160>;
+        y = <40>;
+    };
+};
+```
+
 `linked-devices` and `linked-subsystems` are index-matched arrays. Each link sent to Studio contains:
 
 - Device instance identifier: derived from the linked devicetree node name or label.
 - Device type identifier: the custom Studio RPC subsystem identifier from `linked-subsystems`.
 
-Optional rotation fields are supported:
+Rotation fields are supported by touch pads and custom modules:
 
 ```dts
 r = <150>;  /* tenths of degrees */
