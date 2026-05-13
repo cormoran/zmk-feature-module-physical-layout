@@ -2,3 +2,45 @@
 &board_cdc_acm_uart {
 	status = "disabled";
 };
+
+/ {
+	trackball0: trackball0 {
+		compatible = "zmk,physical-layout-trackball";
+		display-name = "Primary Trackball";
+		size = <34>;
+		x = <425>;
+		y = <125>;
+		linked-devices = <&kscan0>;
+		linked-subsystems = "zmk__trackball";
+	};
+
+	encoder0: encoder0 {
+		compatible = "zmk,physical-layout-rotary-encoder";
+		display-name = "Thumb Encoder";
+		size = <18>;
+		x = <600>;
+		y = <80>;
+	};
+
+	touchpad0: touchpad0 {
+		compatible = "zmk,physical-layout-touch-pad";
+		display-name = "Touch Pad";
+		width = <240>;
+		height = <180>;
+		x = <625>;
+		y = <180>;
+		r = <0>;
+		rx = <0>;
+		ry = <0>;
+	};
+
+	custom_module0: custom_module0 {
+		compatible = "zmk,physical-layout-custom-module";
+		display-name = "Status Display";
+		type = "display";
+		width = <220>;
+		height = <80>;
+		x = <160>;
+		y = <40>;
+	};
+};

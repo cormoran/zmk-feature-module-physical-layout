@@ -1,13 +1,89 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import {
   createConnectedMockZMKApp,
   ZMKAppProvider,
 } from "@cormoran/zmk-studio-react-hook/testing";
-import { RPCTestSection, SUBSYSTEM_IDENTIFIER } from "../src/App";
+import { call_rpc } from "@zmkfirmware/zmk-studio-ts-client";
+import { PhysicalLayoutSection, SUBSYSTEM_IDENTIFIER } from "../src/App";
+import { Response } from "../src/proto/zmk/physical_layouts/physical_layouts";
 
-describe("RPCTestSection Component", () => {
+type RpcRequest = {
+  custom?: unknown;
+  keymap?: unknown;
+};
+
+jest.mock("@zmkfirmware/zmk-studio-ts-client", () => ({
+  call_rpc: jest.fn(),
+}));
+
+jest.mock("@zmkfirmware/zmk-studio-ts-client/transport/serial", () => ({
+  connect: jest.fn(),
+}));
+
+const mockLayoutResponses = () => {
+  (call_rpc as jest.Mock).mockImplementation(
+    (_connection: unknown, request: RpcRequest) => {
+      if (request.custom) {
+        return Promise.resolve({
+          custom: {
+            call: {
+              payload: Response.encode({
+                physicalLayout: {
+                  devices: [
+                    {
+                      identifier: "/trackball0",
+                      displayName: "Primary Trackball",
+                      trackball: {
+                        attrs: {
+                          x: 425,
+                          y: 125,
+                          size: 34,
+                        },
+                      },
+                      links: [
+                        {
+                          deviceIdentifier: "kscan",
+                          subsystemIdentifier: "zmk__trackball",
+                        },
+                      ],
+                    },
+                  ],
+                },
+              }).finish(),
+            },
+          },
+        });
+      }
+      if (request.keymap) {
+        return Promise.resolve({
+          keymap: {
+            getPhysicalLayouts: {
+              activeLayoutIndex: 0,
+              layouts: [
+                {
+                  name: "Default",
+                  keys: [
+                    { width: 100, height: 100, x: 0, y: 0, r: 0, rx: 0, ry: 0 },
+                  ],
+                },
+              ],
+            },
+          },
+        });
+      }
+      return Promise.resolve({});
+    }
+  );
+};
+
+describe("PhysicalLayoutSection Component", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe("With Subsystem", () => {
-    it("should render RPC controls when subsystem is found", () => {
+    it("should render layout controls when subsystem is found", async () => {
+      mockLayoutResponses();
       const mockZMKApp = createConnectedMockZMKApp({
         deviceName: "Test Device",
         subsystems: [SUBSYSTEM_IDENTIFIER],
@@ -15,29 +91,57 @@ describe("RPCTestSection Component", () => {
 
       render(
         <ZMKAppProvider value={mockZMKApp}>
-          <RPCTestSection />
+          <PhysicalLayoutSection />
         </ZMKAppProvider>
       );
 
-      expect(screen.getByText(/RPC Test/i)).toBeInTheDocument();
-      expect(screen.getByText(/Send a sample request/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Value:/i)).toBeInTheDocument();
-      expect(screen.getByText(/Send Request/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Physical Layout" })
+      ).toBeInTheDocument();
+      expect(
+        (await screen.findAllByText(/Primary Trackball/i)).length
+      ).toBeGreaterThan(0);
+      expect(screen.getByText(/Refresh/i)).toBeInTheDocument();
+      expect(screen.getByText(/kscan \(zmk__trackball\)/i)).toBeInTheDocument();
     });
 
-    it("should show default input value", () => {
+    it("should show loaded key and module counts", async () => {
+      mockLayoutResponses();
       const mockZMKApp = createConnectedMockZMKApp({
         subsystems: [SUBSYSTEM_IDENTIFIER],
       });
 
       render(
         <ZMKAppProvider value={mockZMKApp}>
-          <RPCTestSection />
+          <PhysicalLayoutSection />
         </ZMKAppProvider>
       );
 
-      const input = screen.getByLabelText(/Value:/i) as HTMLInputElement;
-      expect(input.value).toBe("42");
+      expect(await screen.findByText(/1 keys, 1 modules/i)).toBeInTheDocument();
+    });
+
+    it("should only auto-load once when subsystem lookup returns a new object", async () => {
+      mockLayoutResponses();
+      const mockZMKApp = createConnectedMockZMKApp({
+        subsystems: [SUBSYSTEM_IDENTIFIER],
+      });
+      mockZMKApp.findSubsystem = jest.fn(() => ({
+        index: 0,
+        identifier: SUBSYSTEM_IDENTIFIER,
+        uiUrl: [],
+      }));
+
+      render(
+        <ZMKAppProvider value={mockZMKApp}>
+          <PhysicalLayoutSection />
+        </ZMKAppProvider>
+      );
+
+      await screen.findByText(/1 keys, 1 modules/i);
+      await waitFor(() => expect(call_rpc).toHaveBeenCalledTimes(2));
+      await new Promise((resolve) => setTimeout(resolve, 25));
+
+      expect(call_rpc).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -50,16 +154,16 @@ describe("RPCTestSection Component", () => {
 
       render(
         <ZMKAppProvider value={mockZMKApp}>
-          <RPCTestSection />
+          <PhysicalLayoutSection />
         </ZMKAppProvider>
       );
 
       expect(
-        screen.getByText(/Subsystem "zmk__template" not found/i)
+        screen.getByText(/Subsystem "zmk__physical_layouts" not found/i)
       ).toBeInTheDocument();
       expect(
         screen.getByText(
-          /Make sure your firmware includes the template module/i
+          /Make sure your firmware includes the physical layout module/i
         )
       ).toBeInTheDocument();
     });
@@ -67,7 +171,7 @@ describe("RPCTestSection Component", () => {
 
   describe("Without ZMKAppContext", () => {
     it("should not render when ZMKAppContext is not provided", () => {
-      const { container } = render(<RPCTestSection />);
+      const { container } = render(<PhysicalLayoutSection />);
 
       expect(container.firstChild).toBeNull();
     });

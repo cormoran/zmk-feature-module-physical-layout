@@ -1,0 +1,48 @@
+# Copyright (c) 2026 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Describes the physical location of a touch pad for custom ZMK Studio rendering.
+
+compatible: "zmk,physical-layout-touch-pad"
+
+properties:
+  display-name:
+    type: string
+    required: true
+
+  width:
+    type: int
+    required: true
+
+  height:
+    type: int
+    required: true
+
+  x:
+    type: int
+    required: true
+
+  y:
+    type: int
+    required: true
+
+  r:
+    type: int
+    default: 0
+    description: Rotation angle in tenths of degrees.
+
+  rx:
+    type: int
+    default: 0
+    description: X coordinate of the rotation origin.
+
+  ry:
+    type: int
+    default: 0
+    description: Y coordinate of the rotation origin.
+
+  linked-devices:
+    type: phandles
+
+  linked-subsystems:
+    type: string-array
