@@ -188,18 +188,17 @@ export function PhysicalLayoutSection() {
   const [isLoading, setIsLoading] = useState(false);
 
   const subsystem = zmkApp?.findSubsystem(SUBSYSTEM_IDENTIFIER);
+  const connection = zmkApp?.state.connection;
+  const subsystemIndex = subsystem?.index;
 
   const loadPhysicalLayout = useCallback(async () => {
-    if (!zmkApp?.state.connection || !subsystem) return;
+    if (!connection || subsystemIndex === undefined) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const service = new ZMKCustomSubsystem(
-        zmkApp.state.connection,
-        subsystem.index
-      );
+      const service = new ZMKCustomSubsystem(connection, subsystemIndex);
 
       const request = Request.create({
         getPhysicalLayout: {},
@@ -208,7 +207,7 @@ export function PhysicalLayoutSection() {
       const payload = Request.encode(request).finish();
       const [modulePayload, keymapResponse] = await Promise.all([
         service.callRPC(payload),
-        call_rpc(zmkApp.state.connection, {
+        call_rpc(connection, {
           keymap: { getPhysicalLayouts: true },
         }).catch(() => null),
       ]);
@@ -238,7 +237,7 @@ export function PhysicalLayoutSection() {
     } finally {
       setIsLoading(false);
     }
-  }, [subsystem, zmkApp]);
+  }, [connection, subsystemIndex]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void loadPhysicalLayout(), 0);

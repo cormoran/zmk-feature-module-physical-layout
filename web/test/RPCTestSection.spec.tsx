@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import {
   createConnectedMockZMKApp,
   ZMKAppProvider,
@@ -118,6 +118,30 @@ describe("PhysicalLayoutSection Component", () => {
       );
 
       expect(await screen.findByText(/1 keys, 1 modules/i)).toBeInTheDocument();
+    });
+
+    it("should only auto-load once when subsystem lookup returns a new object", async () => {
+      mockLayoutResponses();
+      const mockZMKApp = createConnectedMockZMKApp({
+        subsystems: [SUBSYSTEM_IDENTIFIER],
+      });
+      mockZMKApp.findSubsystem = jest.fn(() => ({
+        index: 0,
+        identifier: SUBSYSTEM_IDENTIFIER,
+        uiUrl: [],
+      }));
+
+      render(
+        <ZMKAppProvider value={mockZMKApp}>
+          <PhysicalLayoutSection />
+        </ZMKAppProvider>
+      );
+
+      await screen.findByText(/1 keys, 1 modules/i);
+      await waitFor(() => expect(call_rpc).toHaveBeenCalledTimes(2));
+      await new Promise((resolve) => setTimeout(resolve, 25));
+
+      expect(call_rpc).toHaveBeenCalledTimes(2);
     });
   });
 
