@@ -28,9 +28,8 @@ message LinkedDevice {
 message Trackball { PointSizePhysicalAttrs attrs = 1; }
 
 message RotaryEncoder {
-    uint32 index = 1;
-    bool enabled = 2;
-    PointSizePhysicalAttrs attrs = 3;
+    bool enabled = 1;
+    PointSizePhysicalAttrs attrs = 2;
 }
 
 message RotaryEncoders { repeated RotaryEncoder encoders = 1; }

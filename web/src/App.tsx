@@ -114,17 +114,17 @@ function modulePresentations(module: PhysicalDevice): ModulePresentation[] {
   }
 
   if (module.rotaryEncoders) {
-    return module.rotaryEncoders.encoders.flatMap((encoder) => {
+    return module.rotaryEncoders.encoders.flatMap((encoder, index) => {
       if (!encoder.attrs) return [];
 
       const size = encoder.attrs.size * MM_TO_LAYOUT_UNITS;
       return [
         {
           kind: "rotary-encoder" as const,
-          identifier: `${module.identifier}:${encoder.index}`,
-          displayName: `${module.displayName} ${encoder.index}`,
+          identifier: `${module.identifier}:${index}`,
+          displayName: `${module.displayName} ${index}`,
           enabled: module.enabled && encoder.enabled,
-          label: `rotary encoder ${encoder.index}`,
+          label: `rotary encoder ${index}`,
           attrs: {
             x: encoder.attrs.x,
             y: encoder.attrs.y,
