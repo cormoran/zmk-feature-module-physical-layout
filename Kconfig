@@ -1,10 +1,10 @@
-config ZMK_TEMPLATE_FEATURE
-    bool "Enable template feature"
+config ZMK_PHYSICAL_LAYOUTS_FEATURE
+    bool "Enable physical layout modules feature"
 
-if ZMK_TEMPLATE_FEATURE
+if ZMK_PHYSICAL_LAYOUTS_FEATURE
 
-config ZMK_TEMPLATE_FEATURE_STUDIO_RPC
-    bool "Enable template feature custom Studio RPC"
+config ZMK_PHYSICAL_LAYOUTS_FEATURE_STUDIO_RPC
+    bool "Enable physical layout modules custom Studio RPC"
     depends on ZMK_STUDIO
 
 endif

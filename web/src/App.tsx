@@ -1,31 +1,38 @@
-import { useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import "./App.css";
+import { call_rpc } from "@zmkfirmware/zmk-studio-ts-client";
 import { connect as serial_connect } from "@zmkfirmware/zmk-studio-ts-client/transport/serial";
+import type { KeyPhysicalAttrs } from "@zmkfirmware/zmk-studio-ts-client/keymap";
 import {
   ZMKConnection,
   ZMKCustomSubsystem,
   ZMKAppContext,
 } from "@cormoran/zmk-studio-react-hook";
-import { Request, Response } from "./proto/zmk/template/template";
+import {
+  Request,
+  Response,
+  type PhysicalAttrs,
+  type PhysicalDevice,
+} from "./proto/zmk/physical_layouts/physical_layouts";
 
-export const SUBSYSTEM_IDENTIFIER = "zmk__template";
+export const SUBSYSTEM_IDENTIFIER = "zmk__physical_layouts";
 
 function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🔧 ZMK Module Template</h1>
-        <p>Custom Studio RPC Demo</p>
+        <h1>Physical Layout Studio</h1>
+        <p>Keyboard and module geometry</p>
       </header>
 
       <ZMKConnection
         renderDisconnected={({ connect, isLoading, error }) => (
-          <section className="card">
+          <section className="panel">
             <h2>Device Connection</h2>
-            {isLoading && <p>⏳ Connecting...</p>}
+            {isLoading && <p>Connecting...</p>}
             {error && (
               <div className="error-message">
-                <p>🚨 {error}</p>
+                <p>{error}</p>
               </div>
             )}
             {!isLoading && (
@@ -33,52 +40,95 @@ function App() {
                 className="btn btn-primary"
                 onClick={() => connect(serial_connect)}
               >
-                🔌 Connect Serial
+                Connect Serial
               </button>
             )}
           </section>
         )}
         renderConnected={({ disconnect, deviceName }) => (
           <>
-            <section className="card">
+            <section className="panel">
               <h2>Device Connection</h2>
               <div className="device-info">
-                <h3>✅ Connected to: {deviceName}</h3>
+                <h3>Connected to: {deviceName}</h3>
               </div>
               <button className="btn btn-secondary" onClick={disconnect}>
                 Disconnect
               </button>
             </section>
 
-            <RPCTestSection />
+            <PhysicalLayoutSection />
           </>
         )}
       />
 
       <footer className="app-footer">
-        <p>
-          <strong>Template Module</strong> - Customize this for your ZMK module
-        </p>
+        <p>Custom Studio RPC subsystem: {SUBSYSTEM_IDENTIFIER}</p>
       </footer>
     </div>
   );
 }
 
-export function RPCTestSection() {
+type LayoutState = {
+  keys: KeyPhysicalAttrs[];
+  modules: PhysicalDevice[];
+};
+
+const EMPTY_LAYOUT: LayoutState = { keys: [], modules: [] };
+
+function geometryOf(item: KeyPhysicalAttrs | PhysicalDevice) {
+  return "attrs" in item ? item.attrs : item;
+}
+
+function buildViewBox(keys: KeyPhysicalAttrs[], modules: PhysicalDevice[]) {
+  const moduleAttrs = modules
+    .map((module) => module.attrs)
+    .filter((attrs): attrs is PhysicalAttrs => attrs !== undefined);
+  const geometries: Array<KeyPhysicalAttrs | PhysicalAttrs> = [
+    ...keys,
+    ...moduleAttrs,
+  ];
+
+  if (!geometries.length) {
+    return { minX: 0, minY: 0, width: 600, height: 300 };
+  }
+
+  const minX = Math.min(...geometries.map((item) => item.x));
+  const minY = Math.min(...geometries.map((item) => item.y));
+  const maxX = Math.max(...geometries.map((item) => item.x + item.width));
+  const maxY = Math.max(...geometries.map((item) => item.y + item.height));
+  const padding = 40;
+
+  return {
+    minX: minX - padding,
+    minY: minY - padding,
+    width: Math.max(maxX - minX + padding * 2, 200),
+    height: Math.max(maxY - minY + padding * 2, 160),
+  };
+}
+
+function transformFor(item: KeyPhysicalAttrs | PhysicalDevice) {
+  const attrs = geometryOf(item);
+  if (!attrs) return "";
+
+  const cx = attrs.rx || attrs.x + attrs.width / 2;
+  const cy = attrs.ry || attrs.y + attrs.height / 2;
+  return attrs.r ? `rotate(${attrs.r / 10} ${cx} ${cy})` : "";
+}
+
+export function PhysicalLayoutSection() {
   const zmkApp = useContext(ZMKAppContext);
-  const [inputValue, setInputValue] = useState<number>(42);
-  const [response, setResponse] = useState<string | null>(null);
+  const [layout, setLayout] = useState<LayoutState>(EMPTY_LAYOUT);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!zmkApp) return null;
+  const subsystem = zmkApp?.findSubsystem(SUBSYSTEM_IDENTIFIER);
 
-  const subsystem = zmkApp.findSubsystem(SUBSYSTEM_IDENTIFIER);
-
-  const sendSampleRequest = async () => {
-    if (!zmkApp.state.connection || !subsystem) return;
+  const loadPhysicalLayout = useCallback(async () => {
+    if (!zmkApp?.state.connection || !subsystem) return;
 
     setIsLoading(true);
-    setResponse(null);
+    setError(null);
 
     try {
       const service = new ZMKCustomSubsystem(
@@ -87,41 +137,63 @@ export function RPCTestSection() {
       );
 
       const request = Request.create({
-        sample: {
-          value: inputValue,
-        },
+        getPhysicalLayout: {},
       });
 
       const payload = Request.encode(request).finish();
-      const responsePayload = await service.callRPC(payload);
+      const [modulePayload, keymapResponse] = await Promise.all([
+        service.callRPC(payload),
+        call_rpc(zmkApp.state.connection, {
+          keymap: { getPhysicalLayouts: true },
+        }).catch(() => null),
+      ]);
 
-      if (responsePayload) {
-        const resp = Response.decode(responsePayload);
-        console.log("Decoded response:", resp);
+      const nextLayout: LayoutState = {
+        keys:
+          keymapResponse?.keymap?.getPhysicalLayouts?.layouts[
+            keymapResponse.keymap.getPhysicalLayouts.activeLayoutIndex
+          ]?.keys ?? [],
+        modules: [],
+      };
 
-        if (resp.sample) {
-          setResponse(resp.sample.value);
+      if (modulePayload) {
+        const resp = Response.decode(modulePayload);
+        if (resp.physicalLayout) {
+          nextLayout.modules = resp.physicalLayout.devices;
         } else if (resp.error) {
-          setResponse(`Error: ${resp.error.message}`);
+          throw new Error(resp.error.message);
         }
       }
+
+      setLayout(nextLayout);
     } catch (error) {
-      console.error("RPC call failed:", error);
-      setResponse(
-        `Failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      setError(
+        error instanceof Error ? error.message : "Failed to load layout data"
       );
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [subsystem, zmkApp]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadPhysicalLayout(), 0);
+    return () => window.clearTimeout(timer);
+  }, [loadPhysicalLayout]);
+
+  const viewBox = useMemo(
+    () => buildViewBox(layout.keys, layout.modules),
+    [layout.keys, layout.modules]
+  );
+
+  if (!zmkApp) return null;
 
   if (!subsystem) {
     return (
-      <section className="card">
+      <section className="panel">
         <div className="warning-message">
           <p>
-            ⚠️ Subsystem "{SUBSYSTEM_IDENTIFIER}" not found. Make sure your
-            firmware includes the template module.
+            Subsystem "{SUBSYSTEM_IDENTIFIER}" not found. Make sure your
+            firmware includes the physical layout module.
           </p>
         </div>
       </section>
@@ -129,32 +201,106 @@ export function RPCTestSection() {
   }
 
   return (
-    <section className="card">
-      <h2>RPC Test</h2>
-      <p>Send a sample request to the firmware:</p>
-
-      <div className="input-group">
-        <label htmlFor="value-input">Value:</label>
-        <input
-          id="value-input"
-          type="number"
-          value={inputValue}
-          onChange={(e) => setInputValue(parseInt(e.target.value) || 0)}
-        />
+    <section className="panel layout-panel">
+      <div className="section-heading">
+        <div>
+          <h2>Physical Layout</h2>
+          <p>
+            {layout.keys.length} keys, {layout.modules.length} modules
+          </p>
+        </div>
+        <button
+          className="btn btn-primary"
+          disabled={isLoading}
+          onClick={() => void loadPhysicalLayout()}
+        >
+          {isLoading ? "Loading..." : "Refresh"}
+        </button>
       </div>
 
-      <button
-        className="btn btn-primary"
-        disabled={isLoading}
-        onClick={sendSampleRequest}
+      <svg
+        className="layout-canvas"
+        role="img"
+        aria-label="Physical layout"
+        viewBox={`${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`}
       >
-        {isLoading ? "⏳ Sending..." : "📤 Send Request"}
-      </button>
+        {layout.keys.map((key, index) => (
+          <rect
+            className="layout-key"
+            key={`key-${index}`}
+            x={key.x}
+            y={key.y}
+            width={key.width}
+            height={key.height}
+            rx={6}
+            transform={transformFor(key)}
+          />
+        ))}
+        {layout.modules.map((module) => {
+          if (!module.attrs) return null;
+          return (
+            <g key={module.identifier} transform={transformFor(module)}>
+              <rect
+                className={`layout-module layout-module-${module.type}`}
+                x={module.attrs.x}
+                y={module.attrs.y}
+                width={module.attrs.width}
+                height={module.attrs.height}
+                rx={module.type === "trackball" ? module.attrs.width / 2 : 8}
+              />
+              <text
+                className="layout-module-label"
+                x={module.attrs.x + module.attrs.width / 2}
+                y={module.attrs.y + module.attrs.height / 2}
+                textAnchor="middle"
+                dominantBaseline="middle"
+              >
+                {module.displayName}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
 
-      {response && (
-        <div className="response-box">
-          <h3>Response from Firmware:</h3>
-          <pre>{response}</pre>
+      {error && <p className="error-message">{error}</p>}
+
+      {layout.modules.length > 0 && (
+        <div className="module-list">
+          {layout.modules.map((module) => (
+            <article className="module-row" key={module.identifier}>
+              <div>
+                <h3>{module.displayName}</h3>
+                <p>{module.type}</p>
+              </div>
+              <dl>
+                <div>
+                  <dt>Position</dt>
+                  <dd>
+                    {module.attrs?.x ?? 0}, {module.attrs?.y ?? 0}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Size</dt>
+                  <dd>
+                    {module.attrs?.width ?? 0} x {module.attrs?.height ?? 0}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Links</dt>
+                  <dd>
+                    {module.links.length
+                      ? module.links
+                          .map(
+                            (link) =>
+                              `${link.deviceIdentifier} (${link.subsystemIdentifier})`
+                          )
+                          .join(", ")
+                      : "None"}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+          ))}
         </div>
       )}
     </section>

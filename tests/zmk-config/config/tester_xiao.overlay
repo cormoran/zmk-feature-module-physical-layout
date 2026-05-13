@@ -2,3 +2,17 @@
 &board_cdc_acm_uart {
 	status = "disabled";
 };
+
+/ {
+	trackball0: trackball0 {
+		compatible = "zmk,physical-layout-device";
+		display-name = "Primary Trackball";
+		device-type = "trackball";
+		width = <150>;
+		height = <150>;
+		x = <425>;
+		y = <125>;
+		linked-devices = <&kscan0>;
+		linked-subsystems = "zmk__trackball";
+	};
+};

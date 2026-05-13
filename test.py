@@ -56,30 +56,32 @@ class WestCommandsTests(unittest.TestCase):
     def test_zmk_build(self):
         self._test_zmk_build(
             {
-                "module_template_board_feature_disabled": ConfigAndDeviceTree(
+                "physical_layout_board_feature_disabled": ConfigAndDeviceTree(
                     config=[
                         'CONFIG_ZMK_KEYBOARD_NAME="Module Test"',
                         "CONFIG_ZMK_USB=y",
                         "CONFIG_ZMK_BLE=y",
-                        "# CONFIG_ZMK_TEMPLATE_FEATURE is not set",
+                        "# CONFIG_ZMK_PHYSICAL_LAYOUTS_FEATURE is not set",
                     ],
                     device=[
                         "DT_COMPAT_HAS_OKAY_zmk_keymap",
                     ],
                 ),
-                "module_template_board_with_rpc": ConfigAndDeviceTree(
+                "physical_layout_board_with_rpc": ConfigAndDeviceTree(
                     config=[
                         "CONFIG_ZMK_STUDIO=y",
-                        "CONFIG_ZMK_TEMPLATE_FEATURE=y",
-                        "CONFIG_ZMK_TEMPLATE_FEATURE_STUDIO_RPC=y",
+                        "CONFIG_ZMK_PHYSICAL_LAYOUTS_FEATURE=y",
+                        "CONFIG_ZMK_PHYSICAL_LAYOUTS_FEATURE_STUDIO_RPC=y",
                     ],
-                    device=[],
+                    device=[
+                        "DT_COMPAT_HAS_OKAY_zmk_physical_layout_device",
+                    ],
                 ),
-                "module_template_board_without_rpc": ConfigAndDeviceTree(
+                "physical_layout_board_without_rpc": ConfigAndDeviceTree(
                     config=[
-                        "CONFIG_ZMK_TEMPLATE_FEATURE=y",
+                        "CONFIG_ZMK_PHYSICAL_LAYOUTS_FEATURE=y",
                         "# CONFIG_ZMK_STUDIO is not set",
-                        NotFound("CONFIG_ZMK_TEMPLATE_FEATURE_STUDIO_RPC"),
+                        NotFound("CONFIG_ZMK_PHYSICAL_LAYOUTS_FEATURE_STUDIO_RPC"),
                     ],
                     device=[],
                 ),

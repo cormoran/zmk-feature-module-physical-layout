@@ -1,7 +1,13 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { setupZMKMocks } from "@cormoran/zmk-studio-react-hook/testing";
-import App from "../src/App";
+import App, { SUBSYSTEM_IDENTIFIER } from "../src/App";
+import { Response } from "../src/proto/zmk/physical_layouts/physical_layouts";
+
+type RpcRequest = {
+  custom?: unknown;
+  keymap?: unknown;
+};
 
 // Mock the ZMK client
 jest.mock("@zmkfirmware/zmk-studio-ts-client", () => ({
@@ -18,8 +24,10 @@ describe("App Component", () => {
     it("should render the application header", () => {
       render(<App />);
 
-      expect(screen.getByText(/ZMK Module Template/i)).toBeInTheDocument();
-      expect(screen.getByText(/Custom Studio RPC Demo/i)).toBeInTheDocument();
+      expect(screen.getByText(/Physical Layout Studio/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Keyboard and module geometry/i)
+      ).toBeInTheDocument();
     });
 
     it("should render connection button when disconnected", () => {
@@ -31,7 +39,9 @@ describe("App Component", () => {
     it("should render footer", () => {
       render(<App />);
 
-      expect(screen.getByText(/Template Module/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(SUBSYSTEM_IDENTIFIER))
+      ).toBeInTheDocument();
     });
   });
 
@@ -45,8 +55,72 @@ describe("App Component", () => {
     it("should connect to device when connect button is clicked", async () => {
       mocks.mockSuccessfulConnection({
         deviceName: "Test Keyboard",
-        subsystems: ["zmk__template"],
+        subsystems: [SUBSYSTEM_IDENTIFIER],
       });
+      mocks.call_rpc.mockImplementation(
+        (_connection: unknown, request: RpcRequest) => {
+          if (request.custom) {
+            return Promise.resolve({
+              custom: {
+                call: {
+                  payload: Response.encode({
+                    physicalLayout: {
+                      devices: [
+                        {
+                          identifier: "/trackball0",
+                          displayName: "Primary Trackball",
+                          type: "trackball",
+                          attrs: {
+                            width: 150,
+                            height: 150,
+                            x: 425,
+                            y: 125,
+                            r: 0,
+                            rx: 0,
+                            ry: 0,
+                          },
+                          links: [
+                            {
+                              deviceIdentifier: "kscan",
+                              subsystemIdentifier: "zmk__trackball",
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  }).finish(),
+                },
+              },
+            });
+          }
+          if (request.keymap) {
+            return Promise.resolve({
+              keymap: {
+                getPhysicalLayouts: {
+                  activeLayoutIndex: 0,
+                  layouts: [
+                    {
+                      name: "Default",
+                      keys: [
+                        {
+                          width: 100,
+                          height: 100,
+                          x: 0,
+                          y: 0,
+                          r: 0,
+                          rx: 0,
+                          ry: 0,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
+            });
+          }
+          return Promise.resolve({});
+        }
+      );
 
       const { connect: serial_connect } =
         await import("@zmkfirmware/zmk-studio-ts-client/transport/serial");
@@ -67,7 +141,14 @@ describe("App Component", () => {
       });
 
       expect(screen.getByText(/Disconnect/i)).toBeInTheDocument();
-      expect(screen.getByText(/RPC Test/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Physical Layout" })
+      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getAllByText(/Primary Trackball/i).length
+        ).toBeGreaterThan(0);
+      });
     });
   });
 });
