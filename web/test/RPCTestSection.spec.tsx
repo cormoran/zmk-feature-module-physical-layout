@@ -53,6 +53,7 @@ const mockLayoutResponses = () => {
                       ],
                     },
                   ],
+                  rotaryEncoders: [],
                 },
               }).finish(),
             },

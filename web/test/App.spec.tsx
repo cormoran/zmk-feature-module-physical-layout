@@ -89,6 +89,7 @@ describe("App Component", () => {
                           ],
                         },
                       ],
+                      rotaryEncoders: [],
                     },
                   }).finish(),
                 },

@@ -163,24 +163,21 @@ DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_CUSTOM_MODULE_LINK_ENCODER);
 
 #define PHYSICAL_LAYOUT_ROTARY_ENCODER_ENCODE(idx, node_id)                                        \
     do {                                                                                           \
-        zmk_physical_layouts_PhysicalDevice device =                                               \
-            zmk_physical_layouts_PhysicalDevice_init_zero;                                         \
-        snprintf(device.identifier, sizeof(device.identifier), "%s:%u",                            \
-                 DT_NODE_FULL_NAME(node_id), idx);                                                 \
-        snprintf(device.display_name, sizeof(device.display_name), "%s %u",                        \
-                 DT_PROP(node_id, display_name), idx);                                             \
-        device.enabled = DT_NODE_HAS_STATUS(node_id, okay) &&                                      \
-                         DT_NODE_HAS_STATUS(DT_PHANDLE_BY_IDX(node_id, encoders, idx), okay);      \
-        device.which_device_type = zmk_physical_layouts_PhysicalDevice_rotary_encoder_tag;         \
-        device.device_type.rotary_encoder.enabled = device.enabled;                                \
-        device.device_type.rotary_encoder.has_attrs = true;                                        \
-        device.device_type.rotary_encoder.attrs.x =                                                \
-            DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), x);                                 \
-        device.device_type.rotary_encoder.attrs.y =                                                \
-            DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), y);                                 \
-        device.device_type.rotary_encoder.attrs.size =                                             \
-            DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), size);                              \
-        PHYSICAL_LAYOUT_DEVICE_ENCODE();                                                           \
+        zmk_physical_layouts_RotaryEncoder encoder = zmk_physical_layouts_RotaryEncoder_init_zero; \
+        encoder.enabled = DT_NODE_HAS_STATUS(node_id, okay) &&                                     \
+                          DT_NODE_HAS_STATUS(DT_PHANDLE_BY_IDX(node_id, encoders, idx), okay);     \
+        encoder.has_attrs = true;                                                                  \
+        encoder.attrs.x = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), x);                   \
+        encoder.attrs.y = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), y);                   \
+        encoder.attrs.size = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), size);             \
+        if (!pb_encode_tag_for_field(stream, field)) {                                             \
+            LOG_WRN("Failed to encode rotary encoder tag");                                        \
+            return false;                                                                          \
+        }                                                                                          \
+        if (!pb_encode_submessage(stream, &zmk_physical_layouts_RotaryEncoder_msg, &encoder)) {    \
+            LOG_WRN("Failed to encode rotary encoder submessage");                                 \
+            return false;                                                                          \
+        }                                                                                          \
     } while (false);
 
 #define PHYSICAL_LAYOUT_ROTARY_ENCODERS_ENCODE(node_id)                                            \
@@ -239,9 +236,16 @@ static bool encode_physical_devices(pb_ostream_t *stream, const pb_field_t *fiel
     ARG_UNUSED(arg);
 
     DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_TRACKBALL_ENCODE_IF);
-    DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_ROTARY_ENCODERS_ENCODE_IF);
     DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_TOUCH_PAD_ENCODE_IF);
     DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_CUSTOM_MODULE_ENCODE_IF);
+    return true;
+}
+
+static bool encode_rotary_encoders(pb_ostream_t *stream, const pb_field_t *field,
+                                   void *const *arg) {
+    ARG_UNUSED(arg);
+
+    DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_ROTARY_ENCODERS_ENCODE_IF);
     return true;
 }
 
@@ -250,6 +254,7 @@ static int handle_get_physical_layout_request(zmk_physical_layouts_Response *res
         zmk_physical_layouts_GetPhysicalLayoutResponse_init_zero;
 
     result.devices.funcs.encode = encode_physical_devices;
+    result.rotary_encoders.funcs.encode = encode_rotary_encoders;
 
     resp->which_response_type = zmk_physical_layouts_Response_physical_layout_tag;
     resp->response_type.physical_layout = result;

@@ -13,6 +13,7 @@ import {
   Response,
   type PhysicalDevice,
   type RectPhysicalAttrs,
+  type RotaryEncoder,
 } from "./proto/zmk/physical_layouts/physical_layouts";
 
 export const SUBSYSTEM_IDENTIFIER = "zmk__physical_layouts";
@@ -72,9 +73,10 @@ function App() {
 type LayoutState = {
   keys: KeyPhysicalAttrs[];
   modules: PhysicalDevice[];
+  rotaryEncoders: RotaryEncoder[];
 };
 
-const EMPTY_LAYOUT: LayoutState = { keys: [], modules: [] };
+const EMPTY_LAYOUT: LayoutState = { keys: [], modules: [], rotaryEncoders: [] };
 const MM_TO_LAYOUT_UNITS = 4;
 
 type ModulePresentation = {
@@ -113,30 +115,6 @@ function modulePresentations(module: PhysicalDevice): ModulePresentation[] {
     ];
   }
 
-  if (module.rotaryEncoder?.attrs) {
-    const size = module.rotaryEncoder.attrs.size * MM_TO_LAYOUT_UNITS;
-    return [
-      {
-        kind: "rotary-encoder",
-        identifier: module.identifier,
-        displayName: module.displayName,
-        enabled: module.enabled && module.rotaryEncoder.enabled,
-        label: "rotary encoder",
-        attrs: {
-          x: module.rotaryEncoder.attrs.x,
-          y: module.rotaryEncoder.attrs.y,
-          width: size,
-          height: size,
-          r: 0,
-          rx: 0,
-          ry: 0,
-        },
-        sizeText: `${module.rotaryEncoder.attrs.size} mm`,
-        links: module.links,
-      },
-    ];
-  }
-
   if (module.touchPad?.attrs) {
     return [
       {
@@ -170,12 +148,43 @@ function modulePresentations(module: PhysicalDevice): ModulePresentation[] {
   return [];
 }
 
+function rotaryEncoderPresentation(
+  encoder: RotaryEncoder,
+  index: number
+): ModulePresentation[] {
+  if (!encoder.attrs) return [];
+
+  const size = encoder.attrs.size * MM_TO_LAYOUT_UNITS;
+  return [
+    {
+      kind: "rotary-encoder",
+      identifier: `rotary-encoder:${index}`,
+      displayName: `Rotary Encoder ${index}`,
+      enabled: encoder.enabled,
+      label: "rotary encoder",
+      attrs: {
+        x: encoder.attrs.x,
+        y: encoder.attrs.y,
+        width: size,
+        height: size,
+        r: 0,
+        rx: 0,
+        ry: 0,
+      },
+      sizeText: `${encoder.attrs.size} mm`,
+      links: [],
+    },
+  ];
+}
+
 function geometryOf(item: KeyPhysicalAttrs | ModulePresentation) {
   return "attrs" in item ? item.attrs : item;
 }
 
-function buildViewBox(keys: KeyPhysicalAttrs[], modules: PhysicalDevice[]) {
-  const presentations = modules.flatMap(modulePresentations);
+function buildViewBox(
+  keys: KeyPhysicalAttrs[],
+  presentations: ModulePresentation[]
+) {
   const geometries: Array<KeyPhysicalAttrs | RectPhysicalAttrs> = [
     ...keys,
     ...presentations.map((module) => module.attrs),
@@ -244,12 +253,14 @@ export function PhysicalLayoutSection() {
             keymapResponse.keymap.getPhysicalLayouts.activeLayoutIndex
           ]?.keys ?? [],
         modules: [],
+        rotaryEncoders: [],
       };
 
       if (modulePayload) {
         const resp = Response.decode(modulePayload);
         if (resp.physicalLayout) {
           nextLayout.modules = resp.physicalLayout.devices;
+          nextLayout.rotaryEncoders = resp.physicalLayout.rotaryEncoders ?? [];
         } else if (resp.error) {
           throw new Error(resp.error.message);
         }
@@ -270,13 +281,16 @@ export function PhysicalLayoutSection() {
     return () => window.clearTimeout(timer);
   }, [loadPhysicalLayout]);
 
-  const viewBox = useMemo(
-    () => buildViewBox(layout.keys, layout.modules),
-    [layout.keys, layout.modules]
-  );
   const physicalModules = useMemo(
-    () => layout.modules.flatMap(modulePresentations),
-    [layout.modules]
+    () => [
+      ...layout.modules.flatMap(modulePresentations),
+      ...layout.rotaryEncoders.flatMap(rotaryEncoderPresentation),
+    ],
+    [layout.modules, layout.rotaryEncoders]
+  );
+  const viewBox = useMemo(
+    () => buildViewBox(layout.keys, physicalModules),
+    [layout.keys, physicalModules]
   );
 
   if (!zmkApp) return null;
