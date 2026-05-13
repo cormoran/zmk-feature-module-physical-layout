@@ -113,32 +113,28 @@ function modulePresentations(module: PhysicalDevice): ModulePresentation[] {
     ];
   }
 
-  if (module.rotaryEncoders) {
-    return module.rotaryEncoders.encoders.flatMap((encoder, index) => {
-      if (!encoder.attrs) return [];
-
-      const size = encoder.attrs.size * MM_TO_LAYOUT_UNITS;
-      return [
-        {
-          kind: "rotary-encoder" as const,
-          identifier: `${module.identifier}:${index}`,
-          displayName: `${module.displayName} ${index}`,
-          enabled: module.enabled && encoder.enabled,
-          label: `rotary encoder ${index}`,
-          attrs: {
-            x: encoder.attrs.x,
-            y: encoder.attrs.y,
-            width: size,
-            height: size,
-            r: 0,
-            rx: 0,
-            ry: 0,
-          },
-          sizeText: `${encoder.attrs.size} mm`,
-          links: module.links,
+  if (module.rotaryEncoder?.attrs) {
+    const size = module.rotaryEncoder.attrs.size * MM_TO_LAYOUT_UNITS;
+    return [
+      {
+        kind: "rotary-encoder",
+        identifier: module.identifier,
+        displayName: module.displayName,
+        enabled: module.enabled && module.rotaryEncoder.enabled,
+        label: "rotary encoder",
+        attrs: {
+          x: module.rotaryEncoder.attrs.x,
+          y: module.rotaryEncoder.attrs.y,
+          width: size,
+          height: size,
+          r: 0,
+          rx: 0,
+          ry: 0,
         },
-      ];
-    });
+        sizeText: `${module.rotaryEncoder.attrs.size} mm`,
+        links: module.links,
+      },
+    ];
   }
 
   if (module.touchPad?.attrs) {

@@ -124,7 +124,7 @@ Use `zmk,physical-layout-custom-module` for module types that do not have a dedi
 - Device instance identifier: copied from `linked-device-identifiers`.
 - Device type identifier: the custom Studio RPC subsystem identifier from `linked-subsystems`.
 
-The RPC response includes `enabled` for every physical device. For rotary encoder bundles, each encoder entry also includes `enabled`. These values follow the corresponding devicetree node `status`; nodes with `status = "disabled"` are still reported with `enabled = false`.
+The RPC response includes `enabled` for every physical device. Each rotary encoder in a bundle is reported as a separate physical device in `encoders` array order. These values follow the corresponding devicetree node `status`; nodes with `status = "disabled"` are still reported with `enabled = false`.
 
 Rotation fields are supported by touch pads and custom modules:
 

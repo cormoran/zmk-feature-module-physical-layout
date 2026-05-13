@@ -32,8 +32,6 @@ message RotaryEncoder {
     PointSizePhysicalAttrs attrs = 2;
 }
 
-message RotaryEncoders { repeated RotaryEncoder encoders = 1; }
-
 message TouchPad { RectPhysicalAttrs attrs = 1; }
 
 message CustomModule {
@@ -48,7 +46,7 @@ message PhysicalDevice {
     bool enabled = 8;
     oneof device_type {
         Trackball trackball = 4;
-        RotaryEncoders rotary_encoders = 5;
+        RotaryEncoder rotary_encoder = 5;
         TouchPad touch_pad = 6;
         CustomModule custom_module = 7;
     }
