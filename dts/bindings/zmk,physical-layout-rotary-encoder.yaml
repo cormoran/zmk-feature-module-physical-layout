@@ -1,16 +1,11 @@
 # Copyright (c) 2026 The ZMK Contributors
 # SPDX-License-Identifier: MIT
 
-description: Describes one indexed rotary encoder in a physical rotary encoder bundle.
+description: Describes one rotary encoder in a physical rotary encoder bundle.
 
 compatible: "zmk,physical-layout-rotary-encoder"
 
 properties:
-  index:
-    type: int
-    required: true
-    description: Index into ZMK's official sensor/rotary encoder array.
-
   x:
     type: int
     required: true

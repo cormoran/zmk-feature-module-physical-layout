@@ -58,7 +58,7 @@ Trackballs use `x`, `y`, and `size`. Common ball sizes are `34` and `25`.
 
 ### Rotary Encoders
 
-Rotary encoders are bundled so each physical encoder can be mapped by `index` to ZMK's official rotary encoder array. Each encoder uses `x`, `y`, and `size`.
+Rotary encoders are bundled so each physical encoder can be mapped to ZMK's official rotary encoder array. The position in the `encoders` phandle array is used as the encoder index. Each encoder uses `x`, `y`, and `size`.
 
 ```dts
 / {
@@ -70,7 +70,6 @@ Rotary encoders are bundled so each physical encoder can be mapped by `index` to
 
     encoder0: encoder0 {
         compatible = "zmk,physical-layout-rotary-encoder";
-        index = <0>;
         size = <18>;
         x = <600>;
         y = <80>;

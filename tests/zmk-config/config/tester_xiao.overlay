@@ -22,7 +22,6 @@
 
 	encoder0: encoder0 {
 		compatible = "zmk,physical-layout-rotary-encoder";
-		index = <0>;
 		size = <18>;
 		x = <600>;
 		y = <80>;
@@ -31,7 +30,6 @@
 	encoder1: encoder1 {
 		compatible = "zmk,physical-layout-rotary-encoder";
 		status = "disabled";
-		index = <1>;
 		size = <18>;
 		x = <720>;
 		y = <80>;

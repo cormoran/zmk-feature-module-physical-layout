@@ -132,7 +132,7 @@ DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_CUSTOM_MODULE_LINK_ENCODER);
 #define PHYSICAL_LAYOUT_ROTARY_ENCODER_ENCODE(idx, node_id)                                        \
     do {                                                                                           \
         zmk_physical_layouts_RotaryEncoder encoder = zmk_physical_layouts_RotaryEncoder_init_zero; \
-        encoder.index = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), index);                 \
+        encoder.index = idx;                                                                       \
         encoder.enabled = DT_NODE_HAS_STATUS(DT_PHANDLE_BY_IDX(node_id, encoders, idx), okay);     \
         encoder.has_attrs = true;                                                                  \
         encoder.attrs.x = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), x);                   \
