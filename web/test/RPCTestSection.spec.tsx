@@ -45,6 +45,10 @@ const mockLayoutResponses = () => {
                           deviceIdentifier: "kscan",
                           subsystemIdentifier: "zmk__trackball",
                         },
+                        {
+                          deviceIdentifier: "button",
+                          subsystemIdentifier: "zmk__pointing_buttons",
+                        },
                       ],
                     },
                   ],
@@ -102,7 +106,11 @@ describe("PhysicalLayoutSection Component", () => {
         (await screen.findAllByText(/Primary Trackball/i)).length
       ).toBeGreaterThan(0);
       expect(screen.getByText(/Refresh/i)).toBeInTheDocument();
-      expect(screen.getByText(/kscan \(zmk__trackball\)/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /kscan \(zmk__trackball\), button \(zmk__pointing_buttons\)/i
+        )
+      ).toBeInTheDocument();
     });
 
     it("should show loaded key and module counts", async () => {

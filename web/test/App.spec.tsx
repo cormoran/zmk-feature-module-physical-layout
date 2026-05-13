@@ -81,6 +81,10 @@ describe("App Component", () => {
                               deviceIdentifier: "kscan",
                               subsystemIdentifier: "zmk__trackball",
                             },
+                            {
+                              deviceIdentifier: "button",
+                              subsystemIdentifier: "zmk__pointing_buttons",
+                            },
                           ],
                         },
                       ],

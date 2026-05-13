@@ -27,8 +27,8 @@
 		size = <34>;
 		x = <425>;
 		y = <125>;
-		linked-devices = <&kscan>;
-		linked-subsystems = "zmk__trackball";
+		linked-devices = <&kscan &transform0>;
+		linked-subsystems = "zmk__trackball", "zmk__pointing_buttons";
 	};
 
 	encoder0: encoder0 {

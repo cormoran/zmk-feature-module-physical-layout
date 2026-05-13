@@ -50,8 +50,8 @@ Trackballs use `x`, `y`, and `size`. Common ball sizes are `34` and `25`.
         x = <425>;
         y = <125>;
 
-        linked-devices = <&kscan>;
-        linked-subsystems = "zmk__trackball";
+        linked-devices = <&trackball_sensor &trackball_button>;
+        linked-subsystems = "zmk__trackball", "zmk__pointing_buttons";
     };
 };
 ```
