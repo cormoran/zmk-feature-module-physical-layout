@@ -184,6 +184,10 @@ function pluralize(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+function rotationDegrees(centidegrees: number) {
+  return centidegrees / 100;
+}
+
 function geometryOf(item: KeyPhysicalAttrs | ModulePresentation) {
   return "attrs" in item ? item.attrs : item;
 }
@@ -202,7 +206,7 @@ function rotatedBoundsOf(item: LayoutGeometry) {
     return corners;
   }
 
-  const radians = item.r * (Math.PI / 180);
+  const radians = rotationDegrees(item.r) * (Math.PI / 180);
   const cos = Math.cos(radians);
   const sin = Math.sin(radians);
 
@@ -248,7 +252,9 @@ function buildViewBox(
 function transformFor(item: KeyPhysicalAttrs | ModulePresentation) {
   const attrs = geometryOf(item);
 
-  return attrs.r ? `rotate(${attrs.r} ${attrs.rx} ${attrs.ry})` : "";
+  return attrs.r
+    ? `rotate(${rotationDegrees(attrs.r)} ${attrs.rx} ${attrs.ry})`
+    : "";
 }
 
 export function PhysicalLayoutSection() {

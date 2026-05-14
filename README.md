@@ -129,7 +129,7 @@ The RPC response includes `enabled` for every physical device and rotary encoder
 Rotation fields are supported by touch pads and custom modules:
 
 ```dts
-r = <45>;   /* degrees */
+r = <4500>; /* centi-degrees: 45 degrees */
 rx = <500>;
 ry = <200>;
 ```
