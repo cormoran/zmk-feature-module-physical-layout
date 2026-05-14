@@ -25,6 +25,21 @@ properties:
     required: true
     description: Trackball diameter in the same coordinate units as ZMK key physical layouts.
 
+  r:
+    type: int
+    default: 0
+    description: Rotation angle in tenths of degrees.
+
+  rx:
+    type: int
+    default: 0
+    description: X coordinate of the rotation origin.
+
+  ry:
+    type: int
+    default: 0
+    description: Y coordinate of the rotation origin.
+
   linked-device-identifiers:
     type: string-array
     required: true

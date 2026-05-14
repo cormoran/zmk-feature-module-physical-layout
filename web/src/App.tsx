@@ -109,9 +109,9 @@ function modulePresentations(module: PhysicalDevice): ModulePresentation[] {
           y: module.trackball.attrs.y,
           width: module.trackball.attrs.size,
           height: module.trackball.attrs.size,
-          r: 0,
-          rx: 0,
-          ry: 0,
+          r: module.trackball.attrs.r,
+          rx: module.trackball.attrs.rx,
+          ry: module.trackball.attrs.ry,
         },
         sizeText: `${module.trackball.attrs.size} x ${module.trackball.attrs.size}`,
         links: module.links,
@@ -170,9 +170,9 @@ function rotaryEncoderPresentation(
         y: encoder.attrs.y,
         width: encoder.attrs.size,
         height: encoder.attrs.size,
-        r: 0,
-        rx: 0,
-        ry: 0,
+        r: encoder.attrs.r,
+        rx: encoder.attrs.rx,
+        ry: encoder.attrs.ry,
       },
       sizeText: `${encoder.attrs.size} x ${encoder.attrs.size}`,
       links: [],
@@ -404,30 +404,6 @@ export function PhysicalLayoutSection() {
       </svg>
 
       {error && <p className="error-message">{error}</p>}
-
-      {layout.keys.length > 0 && (
-        <div className="keyswitch-list" aria-label="Key switches">
-          {layout.keys.map((key, index) => (
-            <article className="keyswitch-row" key={`keyswitch-${index}`}>
-              <h3>Key {index}</h3>
-              <dl>
-                <div>
-                  <dt>Position</dt>
-                  <dd>
-                    {key.x}, {key.y}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Size</dt>
-                  <dd>
-                    {key.width} x {key.height}
-                  </dd>
-                </div>
-              </dl>
-            </article>
-          ))}
-        </div>
-      )}
 
       {physicalModules.length > 0 && (
         <div className="module-list">

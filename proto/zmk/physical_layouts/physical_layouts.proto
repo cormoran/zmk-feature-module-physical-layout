@@ -8,6 +8,9 @@ message PointSizePhysicalAttrs {
     int32 x = 1;
     int32 y = 2;
     int32 size = 3;
+    int32 r = 4;
+    int32 rx = 5;
+    int32 ry = 6;
 }
 
 message RectPhysicalAttrs {
