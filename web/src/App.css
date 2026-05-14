@@ -77,9 +77,16 @@
 }
 
 .layout-key {
-  fill: #e7edf3;
-  stroke: #829ab1;
+  fill: #fff7ed;
+  stroke: #c2410c;
   stroke-width: 4;
+}
+
+.layout-key-label {
+  fill: #7c2d12;
+  font-size: 24px;
+  font-weight: 700;
+  pointer-events: none;
 }
 
 .layout-module {
@@ -130,19 +137,29 @@
 }
 
 .module-row {
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) 2fr;
-  gap: 1rem;
   padding: 1rem;
   border: 1px solid #d7dee5;
   border-radius: 8px;
+}
+
+.module-row h3 {
+  margin: 0;
+}
+
+.module-row dl {
+  margin: 0;
+}
+
+.module-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 2fr;
+  gap: 1rem;
 }
 
 .module-row dl {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
-  margin: 0;
 }
 
 .module-row dt {

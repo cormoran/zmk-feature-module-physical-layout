@@ -74,7 +74,7 @@ describe("App Component", () => {
                             attrs: {
                               x: 425,
                               y: 125,
-                              size: 34,
+                              size: 120,
                             },
                           },
                           links: [
@@ -152,6 +152,7 @@ describe("App Component", () => {
           screen.getAllByText(/Primary Trackball/i).length
         ).toBeGreaterThan(0);
       });
+      expect(screen.queryByText("Key 0")).not.toBeInTheDocument();
     });
   });
 });

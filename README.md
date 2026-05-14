@@ -35,18 +35,18 @@ CONFIG_ZMK_PHYSICAL_LAYOUTS_FEATURE_STUDIO_RPC=y
 
 ## Devicetree
 
-Define each non-key physical module with one of the dedicated compatibles below. Coordinates use the same layout coordinate space as ZMK `zmk,physical-layout` key attributes. `size` fields are in millimeters.
+Define each non-key physical module with one of the dedicated compatibles below. Coordinates and sizes use the same unit as ZMK `zmk,physical-layout` key attributes. For example, `x = <100>` matches a ZMK key physical layout `x = 100`, and `size = <120>` means the module is 120 units wide and 120 units tall.
 
 ### Trackball
 
-Trackballs use `x`, `y`, and `size`. Common ball sizes are `34` and `25`.
+Trackballs use `x`, `y`, and `size`.
 
 ```dts
 / {
     trackball0: trackball0 {
         compatible = "zmk,physical-layout-trackball";
         display-name = "Primary Trackball";
-        size = <34>;
+        size = <120>;
         x = <425>;
         y = <125>;
 
@@ -70,7 +70,7 @@ Rotary encoders are bundled so each physical encoder can be mapped to ZMK's offi
 
     encoder0: encoder0 {
         compatible = "zmk,physical-layout-rotary-encoder";
-        size = <18>;
+        size = <120>;
         x = <600>;
         y = <80>;
     };
@@ -129,7 +129,7 @@ The RPC response includes `enabled` for every physical device and rotary encoder
 Rotation fields are supported by touch pads and custom modules:
 
 ```dts
-r = <150>;  /* tenths of degrees */
+r = <4500>; /* centi-degrees: 45 degrees */
 rx = <500>;
 ry = <200>;
 ```

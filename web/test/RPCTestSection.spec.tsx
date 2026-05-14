@@ -38,7 +38,7 @@ const mockLayoutResponses = () => {
                         attrs: {
                           x: 425,
                           y: 125,
-                          size: 34,
+                          size: 120,
                         },
                       },
                       links: [
@@ -69,7 +69,24 @@ const mockLayoutResponses = () => {
                 {
                   name: "Default",
                   keys: [
-                    { width: 100, height: 100, x: 0, y: 0, r: 0, rx: 0, ry: 0 },
+                    {
+                      width: 100,
+                      height: 100,
+                      x: 100,
+                      y: 0,
+                      r: 4500,
+                      rx: 0,
+                      ry: 0,
+                    },
+                    {
+                      width: 100,
+                      height: 100,
+                      x: 100,
+                      y: 120,
+                      r: -4500,
+                      rx: 0,
+                      ry: 0,
+                    },
                   ],
                 },
               ],
@@ -113,9 +130,17 @@ describe("PhysicalLayoutSection Component", () => {
           /trackball_sensor \(zmk__trackball\), trackball_button \(zmk__pointing_buttons\)/i
         )
       ).toBeInTheDocument();
+      expect(screen.queryByText("Key 0")).not.toBeInTheDocument();
+      expect(screen.getAllByText("120 x 120").length).toBeGreaterThan(0);
+      expect(
+        document.querySelector('g[transform="rotate(45 0 0)"]')
+      ).toBeInTheDocument();
+      expect(
+        document.querySelector('g[transform="rotate(-45 0 0)"]')
+      ).toBeInTheDocument();
     });
 
-    it("should show loaded key and module counts", async () => {
+    it("should show loaded keyswitch and module counts", async () => {
       mockLayoutResponses();
       const mockZMKApp = createConnectedMockZMKApp({
         subsystems: [SUBSYSTEM_IDENTIFIER],
@@ -127,7 +152,9 @@ describe("PhysicalLayoutSection Component", () => {
         </ZMKAppProvider>
       );
 
-      expect(await screen.findByText(/1 keys, 1 modules/i)).toBeInTheDocument();
+      expect(
+        await screen.findByText(/2 keyswitches, 1 module, Default/i)
+      ).toBeInTheDocument();
     });
 
     it("should only auto-load once when subsystem lookup returns a new object", async () => {
@@ -147,7 +174,7 @@ describe("PhysicalLayoutSection Component", () => {
         </ZMKAppProvider>
       );
 
-      await screen.findByText(/1 keys, 1 modules/i);
+      await screen.findByText(/2 keyswitches, 1 module, Default/i);
       await waitFor(() => expect(call_rpc).toHaveBeenCalledTimes(2));
       await new Promise((resolve) => setTimeout(resolve, 25));
 

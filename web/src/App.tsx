@@ -72,12 +72,17 @@ function App() {
 
 type LayoutState = {
   keys: KeyPhysicalAttrs[];
+  activeLayoutName: string | null;
   modules: PhysicalDevice[];
   rotaryEncoders: RotaryEncoder[];
 };
 
-const EMPTY_LAYOUT: LayoutState = { keys: [], modules: [], rotaryEncoders: [] };
-const MM_TO_LAYOUT_UNITS = 4;
+const EMPTY_LAYOUT: LayoutState = {
+  keys: [],
+  activeLayoutName: null,
+  modules: [],
+  rotaryEncoders: [],
+};
 
 type ModulePresentation = {
   kind: "trackball" | "rotary-encoder" | "touch-pad" | "custom-module";
@@ -92,7 +97,6 @@ type ModulePresentation = {
 
 function modulePresentations(module: PhysicalDevice): ModulePresentation[] {
   if (module.trackball?.attrs) {
-    const size = module.trackball.attrs.size * MM_TO_LAYOUT_UNITS;
     return [
       {
         kind: "trackball",
@@ -103,13 +107,13 @@ function modulePresentations(module: PhysicalDevice): ModulePresentation[] {
         attrs: {
           x: module.trackball.attrs.x,
           y: module.trackball.attrs.y,
-          width: size,
-          height: size,
+          width: module.trackball.attrs.size,
+          height: module.trackball.attrs.size,
           r: 0,
           rx: 0,
           ry: 0,
         },
-        sizeText: `${module.trackball.attrs.size} mm`,
+        sizeText: `${module.trackball.attrs.size} x ${module.trackball.attrs.size}`,
         links: module.links,
       },
     ];
@@ -154,7 +158,6 @@ function rotaryEncoderPresentation(
 ): ModulePresentation[] {
   if (!encoder.attrs) return [];
 
-  const size = encoder.attrs.size * MM_TO_LAYOUT_UNITS;
   return [
     {
       kind: "rotary-encoder",
@@ -165,27 +168,64 @@ function rotaryEncoderPresentation(
       attrs: {
         x: encoder.attrs.x,
         y: encoder.attrs.y,
-        width: size,
-        height: size,
+        width: encoder.attrs.size,
+        height: encoder.attrs.size,
         r: 0,
         rx: 0,
         ry: 0,
       },
-      sizeText: `${encoder.attrs.size} mm`,
+      sizeText: `${encoder.attrs.size} x ${encoder.attrs.size}`,
       links: [],
     },
   ];
+}
+
+function pluralize(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function rotationDegrees(centidegrees: number) {
+  return centidegrees / 100;
 }
 
 function geometryOf(item: KeyPhysicalAttrs | ModulePresentation) {
   return "attrs" in item ? item.attrs : item;
 }
 
+type LayoutGeometry = KeyPhysicalAttrs | RectPhysicalAttrs;
+
+function rotatedBoundsOf(item: LayoutGeometry) {
+  const corners = [
+    { x: item.x, y: item.y },
+    { x: item.x + item.width, y: item.y },
+    { x: item.x + item.width, y: item.y + item.height },
+    { x: item.x, y: item.y + item.height },
+  ];
+
+  if (!item.r) {
+    return corners;
+  }
+
+  const radians = rotationDegrees(item.r) * (Math.PI / 180);
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+
+  return corners.map((corner) => {
+    const dx = corner.x - item.rx;
+    const dy = corner.y - item.ry;
+
+    return {
+      x: item.rx + dx * cos - dy * sin,
+      y: item.ry + dx * sin + dy * cos,
+    };
+  });
+}
+
 function buildViewBox(
   keys: KeyPhysicalAttrs[],
   presentations: ModulePresentation[]
 ) {
-  const geometries: Array<KeyPhysicalAttrs | RectPhysicalAttrs> = [
+  const geometries: LayoutGeometry[] = [
     ...keys,
     ...presentations.map((module) => module.attrs),
   ];
@@ -194,10 +234,11 @@ function buildViewBox(
     return { minX: 0, minY: 0, width: 600, height: 300 };
   }
 
-  const minX = Math.min(...geometries.map((item) => item.x));
-  const minY = Math.min(...geometries.map((item) => item.y));
-  const maxX = Math.max(...geometries.map((item) => item.x + item.width));
-  const maxY = Math.max(...geometries.map((item) => item.y + item.height));
+  const points = geometries.flatMap(rotatedBoundsOf);
+  const minX = Math.min(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const maxY = Math.max(...points.map((point) => point.y));
   const padding = 40;
 
   return {
@@ -211,9 +252,9 @@ function buildViewBox(
 function transformFor(item: KeyPhysicalAttrs | ModulePresentation) {
   const attrs = geometryOf(item);
 
-  const cx = attrs.rx || attrs.x + attrs.width / 2;
-  const cy = attrs.ry || attrs.y + attrs.height / 2;
-  return attrs.r ? `rotate(${attrs.r / 10} ${cx} ${cy})` : "";
+  return attrs.r
+    ? `rotate(${rotationDegrees(attrs.r)} ${attrs.rx} ${attrs.ry})`
+    : "";
 }
 
 export function PhysicalLayoutSection() {
@@ -247,11 +288,13 @@ export function PhysicalLayoutSection() {
         }).catch(() => null),
       ]);
 
+      const physicalLayouts = keymapResponse?.keymap?.getPhysicalLayouts;
+      const activeLayout =
+        physicalLayouts?.layouts[physicalLayouts.activeLayoutIndex];
+
       const nextLayout: LayoutState = {
-        keys:
-          keymapResponse?.keymap?.getPhysicalLayouts?.layouts[
-            keymapResponse.keymap.getPhysicalLayouts.activeLayoutIndex
-          ]?.keys ?? [],
+        keys: activeLayout?.keys ?? [],
+        activeLayoutName: activeLayout?.name ?? null,
         modules: [],
         rotaryEncoders: [],
       };
@@ -314,7 +357,9 @@ export function PhysicalLayoutSection() {
         <div>
           <h2>Physical Layout</h2>
           <p>
-            {layout.keys.length} keys, {physicalModules.length} modules
+            {pluralize(layout.keys.length, "keyswitch", "keyswitches")},{" "}
+            {pluralize(physicalModules.length, "module")}
+            {layout.activeLayoutName ? `, ${layout.activeLayoutName}` : ""}
           </p>
         </div>
         <button
@@ -333,16 +378,29 @@ export function PhysicalLayoutSection() {
         viewBox={`${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`}
       >
         {layout.keys.map((key, index) => (
-          <rect
-            className="layout-key"
+          <g
+            className="layout-keyswitch"
             key={`key-${index}`}
-            x={key.x}
-            y={key.y}
-            width={key.width}
-            height={key.height}
-            rx={6}
             transform={transformFor(key)}
-          />
+          >
+            <rect
+              className="layout-key"
+              x={key.x}
+              y={key.y}
+              width={key.width}
+              height={key.height}
+              rx={6}
+            />
+            <text
+              className="layout-key-label"
+              x={key.x + key.width / 2}
+              y={key.y + key.height / 2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+            >
+              {index}
+            </text>
+          </g>
         ))}
         {physicalModules.map((presentation) => {
           const cornerRadius =
