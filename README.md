@@ -49,9 +49,6 @@ Trackballs use `x`, `y`, and `size`.
         size = <120>;
         x = <425>;
         y = <125>;
-        r = <150>;
-        rx = <485>;
-        ry = <185>;
 
         linked-device-identifiers = "trackball_sensor", "trackball_button";
         linked-subsystems = "zmk__trackball", "zmk__pointing_buttons";
@@ -76,9 +73,6 @@ Rotary encoders are bundled so each physical encoder can be mapped to ZMK's offi
         size = <120>;
         x = <600>;
         y = <80>;
-        r = <450>;
-        rx = <660>;
-        ry = <140>;
     };
 };
 ```
@@ -132,7 +126,7 @@ Use `zmk,physical-layout-custom-module` for module types that do not have a dedi
 
 The RPC response includes `enabled` for every physical device and rotary encoder. Rotary encoders are reported in `rotary_encoders` array order so the index maps directly to ZMK's official rotary encoder array. These values follow the corresponding devicetree node `status`; nodes with `status = "disabled"` are still reported with `enabled = false`.
 
-Rotation fields are supported by all modules:
+Rotation fields are supported by touch pads and custom modules:
 
 ```dts
 r = <150>;  /* tenths of degrees */

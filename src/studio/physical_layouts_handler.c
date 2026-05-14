@@ -158,9 +158,6 @@ DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_CUSTOM_MODULE_LINK_ENCODER);
         device.device_type.trackball.attrs.x = DT_PROP(node_id, x);                                \
         device.device_type.trackball.attrs.y = DT_PROP(node_id, y);                                \
         device.device_type.trackball.attrs.size = DT_PROP(node_id, size);                          \
-        device.device_type.trackball.attrs.r = DT_PROP(node_id, r);                                \
-        device.device_type.trackball.attrs.rx = DT_PROP(node_id, rx);                              \
-        device.device_type.trackball.attrs.ry = DT_PROP(node_id, ry);                              \
         PHYSICAL_LAYOUT_DEVICE_ENCODE();                                                           \
     } while (false);
 
@@ -173,9 +170,6 @@ DT_FOREACH_CHILD(DT_ROOT, PHYSICAL_LAYOUT_CUSTOM_MODULE_LINK_ENCODER);
         encoder.attrs.x = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), x);                   \
         encoder.attrs.y = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), y);                   \
         encoder.attrs.size = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), size);             \
-        encoder.attrs.r = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), r);                   \
-        encoder.attrs.rx = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), rx);                 \
-        encoder.attrs.ry = DT_PROP(DT_PHANDLE_BY_IDX(node_id, encoders, idx), ry);                 \
         if (!pb_encode_tag_for_field(stream, field)) {                                             \
             LOG_WRN("Failed to encode rotary encoder tag");                                        \
             return false;                                                                          \

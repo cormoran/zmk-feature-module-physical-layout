@@ -10,9 +10,6 @@
 		size = <120>;
 		x = <425>;
 		y = <125>;
-		r = <150>;
-		rx = <485>;
-		ry = <185>;
 		linked-device-identifiers = "trackball_sensor", "trackball_button";
 		linked-subsystems = "zmk__trackball", "zmk__pointing_buttons";
 	};
@@ -28,9 +25,6 @@
 		size = <120>;
 		x = <600>;
 		y = <80>;
-		r = <450>;
-		rx = <660>;
-		ry = <140>;
 	};
 
 	encoder1: encoder1 {

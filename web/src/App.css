@@ -130,24 +130,43 @@
   stroke-dasharray: 12 8;
 }
 
+.keyswitch-list,
 .module-list {
   display: grid;
   gap: 0.75rem;
   margin-top: 1rem;
 }
 
+.keyswitch-list {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.keyswitch-row,
 .module-row {
   padding: 1rem;
   border: 1px solid #d7dee5;
   border-radius: 8px;
 }
 
+.keyswitch-row {
+  background: #fffbeb;
+}
+
+.keyswitch-row h3,
 .module-row h3 {
   margin: 0;
 }
 
+.keyswitch-row dl,
 .module-row dl {
   margin: 0;
+}
+
+.keyswitch-row dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
 }
 
 .module-row {
@@ -162,11 +181,13 @@
   gap: 1rem;
 }
 
+.keyswitch-row dt,
 .module-row dt {
   color: #627d98;
   font-size: 0.8rem;
 }
 
+.keyswitch-row dd,
 .module-row dd {
   margin: 0.2rem 0 0;
 }
@@ -190,6 +211,7 @@
     align-items: stretch;
   }
 
+  .keyswitch-row dl,
   .module-row dl {
     grid-template-columns: 1fr;
   }
