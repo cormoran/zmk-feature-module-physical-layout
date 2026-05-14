@@ -23,7 +23,7 @@ properties:
   size:
     type: int
     required: true
-    description: Trackball diameter in millimeters. Common values are 34 and 25.
+    description: Trackball diameter in the same coordinate units as ZMK key physical layouts.
 
   linked-device-identifiers:
     type: string-array

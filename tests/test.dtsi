@@ -24,7 +24,7 @@
 	trackball0: trackball0 {
 		compatible = "zmk,physical-layout-trackball";
 		display-name = "Primary Trackball";
-		size = <34>;
+		size = <120>;
 		x = <425>;
 		y = <125>;
 		linked-device-identifiers = "trackball_sensor", "trackball_button";
@@ -39,7 +39,7 @@
 
 	encoder0: encoder0 {
 		compatible = "zmk,physical-layout-rotary-encoder";
-		size = <18>;
+		size = <120>;
 		x = <600>;
 		y = <80>;
 	};
@@ -47,7 +47,7 @@
 	encoder1: encoder1 {
 		compatible = "zmk,physical-layout-rotary-encoder";
 		status = "disabled";
-		size = <18>;
+		size = <120>;
 		x = <720>;
 		y = <80>;
 	};

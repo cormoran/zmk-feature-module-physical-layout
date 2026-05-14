@@ -19,4 +19,4 @@ properties:
   size:
     type: int
     required: true
-    description: Rotary encoder diameter in millimeters.
+    description: Rotary encoder diameter in the same coordinate units as ZMK key physical layouts.
