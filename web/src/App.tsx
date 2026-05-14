@@ -188,11 +188,40 @@ function geometryOf(item: KeyPhysicalAttrs | ModulePresentation) {
   return "attrs" in item ? item.attrs : item;
 }
 
+type LayoutGeometry = KeyPhysicalAttrs | RectPhysicalAttrs;
+
+function rotatedBoundsOf(item: LayoutGeometry) {
+  const corners = [
+    { x: item.x, y: item.y },
+    { x: item.x + item.width, y: item.y },
+    { x: item.x + item.width, y: item.y + item.height },
+    { x: item.x, y: item.y + item.height },
+  ];
+
+  if (!item.r) {
+    return corners;
+  }
+
+  const radians = (item.r / 10) * (Math.PI / 180);
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+
+  return corners.map((corner) => {
+    const dx = corner.x - item.rx;
+    const dy = corner.y - item.ry;
+
+    return {
+      x: item.rx + dx * cos - dy * sin,
+      y: item.ry + dx * sin + dy * cos,
+    };
+  });
+}
+
 function buildViewBox(
   keys: KeyPhysicalAttrs[],
   presentations: ModulePresentation[]
 ) {
-  const geometries: Array<KeyPhysicalAttrs | RectPhysicalAttrs> = [
+  const geometries: LayoutGeometry[] = [
     ...keys,
     ...presentations.map((module) => module.attrs),
   ];
@@ -201,10 +230,11 @@ function buildViewBox(
     return { minX: 0, minY: 0, width: 600, height: 300 };
   }
 
-  const minX = Math.min(...geometries.map((item) => item.x));
-  const minY = Math.min(...geometries.map((item) => item.y));
-  const maxX = Math.max(...geometries.map((item) => item.x + item.width));
-  const maxY = Math.max(...geometries.map((item) => item.y + item.height));
+  const points = geometries.flatMap(rotatedBoundsOf);
+  const minX = Math.min(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const maxY = Math.max(...points.map((point) => point.y));
   const padding = 40;
 
   return {
@@ -218,9 +248,7 @@ function buildViewBox(
 function transformFor(item: KeyPhysicalAttrs | ModulePresentation) {
   const attrs = geometryOf(item);
 
-  const cx = attrs.rx || attrs.x + attrs.width / 2;
-  const cy = attrs.ry || attrs.y + attrs.height / 2;
-  return attrs.r ? `rotate(${attrs.r / 10} ${cx} ${cy})` : "";
+  return attrs.r ? `rotate(${attrs.r / 10} ${attrs.rx} ${attrs.ry})` : "";
 }
 
 export function PhysicalLayoutSection() {
@@ -404,30 +432,6 @@ export function PhysicalLayoutSection() {
       </svg>
 
       {error && <p className="error-message">{error}</p>}
-
-      {layout.keys.length > 0 && (
-        <div className="keyswitch-list" aria-label="Key switches">
-          {layout.keys.map((key, index) => (
-            <article className="keyswitch-row" key={`keyswitch-${index}`}>
-              <h3>Key {index}</h3>
-              <dl>
-                <div>
-                  <dt>Position</dt>
-                  <dd>
-                    {key.x}, {key.y}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Size</dt>
-                  <dd>
-                    {key.width} x {key.height}
-                  </dd>
-                </div>
-              </dl>
-            </article>
-          ))}
-        </div>
-      )}
 
       {physicalModules.length > 0 && (
         <div className="module-list">

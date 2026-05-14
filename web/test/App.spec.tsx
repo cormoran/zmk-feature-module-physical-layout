@@ -152,7 +152,7 @@ describe("App Component", () => {
           screen.getAllByText(/Primary Trackball/i).length
         ).toBeGreaterThan(0);
       });
-      expect(screen.getByText("Key 0")).toBeInTheDocument();
+      expect(screen.queryByText("Key 0")).not.toBeInTheDocument();
     });
   });
 });

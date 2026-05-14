@@ -69,7 +69,15 @@ const mockLayoutResponses = () => {
                 {
                   name: "Default",
                   keys: [
-                    { width: 100, height: 100, x: 0, y: 0, r: 0, rx: 0, ry: 0 },
+                    {
+                      width: 100,
+                      height: 100,
+                      x: 100,
+                      y: 0,
+                      r: 150,
+                      rx: 0,
+                      ry: 0,
+                    },
                   ],
                 },
               ],
@@ -113,8 +121,11 @@ describe("PhysicalLayoutSection Component", () => {
           /trackball_sensor \(zmk__trackball\), trackball_button \(zmk__pointing_buttons\)/i
         )
       ).toBeInTheDocument();
-      expect(screen.getByText("Key 0")).toBeInTheDocument();
+      expect(screen.queryByText("Key 0")).not.toBeInTheDocument();
       expect(screen.getAllByText("120 x 120").length).toBeGreaterThan(0);
+      expect(
+        document.querySelector('g[transform="rotate(15 0 0)"]')
+      ).toBeInTheDocument();
     });
 
     it("should show loaded keyswitch and module counts", async () => {
