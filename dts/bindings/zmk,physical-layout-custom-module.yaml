@@ -34,7 +34,7 @@ properties:
   r:
     type: int
     default: 0
-    description: Rotation angle in tenths of degrees.
+    description: Rotation angle in degrees.
 
   rx:
     type: int

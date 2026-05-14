@@ -180,8 +180,8 @@ function rotaryEncoderPresentation(
   ];
 }
 
-function pluralize(count: number, singular: string) {
-  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+function pluralize(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function geometryOf(item: KeyPhysicalAttrs | ModulePresentation) {
@@ -202,7 +202,7 @@ function rotatedBoundsOf(item: LayoutGeometry) {
     return corners;
   }
 
-  const radians = (item.r / 10) * (Math.PI / 180);
+  const radians = item.r * (Math.PI / 180);
   const cos = Math.cos(radians);
   const sin = Math.sin(radians);
 
@@ -248,7 +248,7 @@ function buildViewBox(
 function transformFor(item: KeyPhysicalAttrs | ModulePresentation) {
   const attrs = geometryOf(item);
 
-  return attrs.r ? `rotate(${attrs.r / 10} ${attrs.rx} ${attrs.ry})` : "";
+  return attrs.r ? `rotate(${attrs.r} ${attrs.rx} ${attrs.ry})` : "";
 }
 
 export function PhysicalLayoutSection() {
@@ -351,7 +351,7 @@ export function PhysicalLayoutSection() {
         <div>
           <h2>Physical Layout</h2>
           <p>
-            {pluralize(layout.keys.length, "keyswitch")},{" "}
+            {pluralize(layout.keys.length, "keyswitch", "keyswitches")},{" "}
             {pluralize(physicalModules.length, "module")}
             {layout.activeLayoutName ? `, ${layout.activeLayoutName}` : ""}
           </p>
