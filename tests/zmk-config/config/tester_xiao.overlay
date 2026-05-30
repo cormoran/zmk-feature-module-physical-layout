@@ -5,7 +5,7 @@
 
 / {
 	trackball0: trackball0 {
-		compatible = "zmk,physical-layout-trackball";
+		compatible = "cormoran,physical-layout-trackball";
 		display-name = "Primary Trackball";
 		size = <120>;
 		x = <425>;
@@ -15,20 +15,20 @@
 	};
 
 	rotary_encoders0: rotary_encoders0 {
-		compatible = "zmk,physical-layout-rotary-encoders";
+		compatible = "cormoran,physical-layout-rotary-encoders";
 		display-name = "Rotary Encoders";
 		encoders = <&encoder0 &encoder1>;
 	};
 
 	encoder0: encoder0 {
-		compatible = "zmk,physical-layout-rotary-encoder";
+		compatible = "cormoran,physical-layout-rotary-encoder";
 		size = <120>;
 		x = <600>;
 		y = <80>;
 	};
 
 	encoder1: encoder1 {
-		compatible = "zmk,physical-layout-rotary-encoder";
+		compatible = "cormoran,physical-layout-rotary-encoder";
 		status = "disabled";
 		size = <120>;
 		x = <720>;
@@ -36,7 +36,7 @@
 	};
 
 	touchpad0: touchpad0 {
-		compatible = "zmk,physical-layout-touch-pad";
+		compatible = "cormoran,physical-layout-touch-pad";
 		display-name = "Touch Pad";
 		width = <240>;
 		height = <180>;
@@ -50,7 +50,7 @@
 	};
 
 	custom_module0: custom_module0 {
-		compatible = "zmk,physical-layout-custom-module";
+		compatible = "cormoran,physical-layout-custom-module";
 		display-name = "Status Display";
 		type = "display";
 		width = <220>;

@@ -196,7 +196,7 @@ describe("PhysicalLayoutSection Component", () => {
       );
 
       expect(
-        screen.getByText(/Subsystem "zmk__physical_layouts" not found/i)
+        screen.getByText(/Subsystem "cormoran__physical_layouts" not found/i)
       ).toBeInTheDocument();
       expect(
         screen.getByText(

@@ -1,19 +1,14 @@
 # Copyright (c) 2026 The ZMK Contributors
 # SPDX-License-Identifier: MIT
 
-description: Describes the physical location of a custom module for custom ZMK Studio rendering.
+description: Describes the physical location of a touch pad for custom ZMK Studio rendering.
 
-compatible: "zmk,physical-layout-custom-module"
+compatible: "cormoran,physical-layout-touch-pad"
 
 properties:
   display-name:
     type: string
     required: true
-
-  type:
-    type: string
-    required: true
-    description: Custom module type label.
 
   width:
     type: int

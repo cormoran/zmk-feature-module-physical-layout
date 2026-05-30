@@ -1,6 +1,6 @@
 # Physical Layout Web UI
 
-This React app connects to ZMK Studio, calls the `zmk__physical_layouts` custom RPC subsystem, and renders non-key physical modules together with ZMK's official key physical layout data.
+This React app connects to ZMK Studio, calls the `cormoran__physical_layouts` custom RPC subsystem, and renders non-key physical modules together with ZMK's official key physical layout data.
 
 ## Commands
 

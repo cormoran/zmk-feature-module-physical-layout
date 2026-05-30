@@ -16,7 +16,7 @@ import {
   type RotaryEncoder,
 } from "./proto/zmk/physical_layouts/physical_layouts";
 
-export const SUBSYSTEM_IDENTIFIER = "zmk__physical_layouts";
+export const SUBSYSTEM_IDENTIFIER = "cormoran__physical_layouts";
 
 function App() {
   return (

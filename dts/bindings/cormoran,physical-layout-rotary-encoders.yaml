@@ -3,7 +3,7 @@
 
 description: Bundles physical rotary encoders for mapping to ZMK's official encoder indexes.
 
-compatible: "zmk,physical-layout-rotary-encoders"
+compatible: "cormoran,physical-layout-rotary-encoders"
 
 properties:
   display-name:

@@ -3,7 +3,7 @@
 
 description: Describes one rotary encoder in a physical rotary encoder bundle.
 
-compatible: "zmk,physical-layout-rotary-encoder"
+compatible: "cormoran,physical-layout-rotary-encoder"
 
 properties:
   x:
