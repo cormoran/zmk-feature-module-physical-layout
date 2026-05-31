@@ -1,8 +1,8 @@
 # Nanopb options file for physical_layouts.proto
 
-zmk.physical_layouts.LinkedDevice.device_identifier      max_size:64
-zmk.physical_layouts.LinkedDevice.subsystem_identifier   max_size:64
-zmk.physical_layouts.PhysicalDevice.identifier           max_size:64
-zmk.physical_layouts.PhysicalDevice.display_name         max_size:64
-zmk.physical_layouts.CustomModule.type                   max_size:32
-zmk.physical_layouts.ErrorResponse.message               max_size:64
+cormoran.zmk.physical_layouts.LinkedDevice.device_identifier      max_size:64
+cormoran.zmk.physical_layouts.LinkedDevice.subsystem_identifier   max_size:64
+cormoran.zmk.physical_layouts.PhysicalDevice.identifier           max_size:64
+cormoran.zmk.physical_layouts.PhysicalDevice.display_name         max_size:64
+cormoran.zmk.physical_layouts.CustomModule.type                   max_size:32
+cormoran.zmk.physical_layouts.ErrorResponse.message               max_size:64

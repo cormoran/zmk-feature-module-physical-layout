@@ -5,7 +5,7 @@ This ZMK module adds a custom ZMK Studio RPC subsystem for describing non-key ph
 The custom RPC subsystem identifier is:
 
 ```text
-zmk__physical_layouts
+cormoran__physical_layouts
 ```
 
 ## Install
@@ -44,7 +44,7 @@ Trackballs use `x`, `y`, and `size`.
 ```dts
 / {
     trackball0: trackball0 {
-        compatible = "zmk,physical-layout-trackball";
+        compatible = "cormoran,physical-layout-trackball";
         display-name = "Primary Trackball";
         size = <120>;
         x = <425>;
@@ -63,13 +63,13 @@ Rotary encoders are bundled so each physical encoder can be mapped to ZMK's offi
 ```dts
 / {
     rotary_encoders0: rotary_encoders0 {
-        compatible = "zmk,physical-layout-rotary-encoders";
+        compatible = "cormoran,physical-layout-rotary-encoders";
         display-name = "Rotary Encoders";
         encoders = <&encoder0>;
     };
 
     encoder0: encoder0 {
-        compatible = "zmk,physical-layout-rotary-encoder";
+        compatible = "cormoran,physical-layout-rotary-encoder";
         size = <120>;
         x = <600>;
         y = <80>;
@@ -84,7 +84,7 @@ Touch pads use rectangular geometry and optional rotation fields.
 ```dts
 / {
     touchpad0: touchpad0 {
-        compatible = "zmk,physical-layout-touch-pad";
+        compatible = "cormoran,physical-layout-touch-pad";
         display-name = "Touch Pad";
         width = <240>;
         height = <180>;
@@ -101,12 +101,12 @@ Touch pads use rectangular geometry and optional rotation fields.
 
 ### Custom Module
 
-Use `zmk,physical-layout-custom-module` for module types that do not have a dedicated compatible.
+Use `cormoran,physical-layout-custom-module` for module types that do not have a dedicated compatible.
 
 ```dts
 / {
     custom_module0: custom_module0 {
-        compatible = "zmk,physical-layout-custom-module";
+        compatible = "cormoran,physical-layout-custom-module";
         display-name = "Status Display";
         type = "display";
         width = <220>;

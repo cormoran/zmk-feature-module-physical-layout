@@ -3,7 +3,7 @@
 
 description: Describes the physical location of a trackball for custom ZMK Studio rendering.
 
-compatible: "zmk,physical-layout-trackball"
+compatible: "cormoran,physical-layout-trackball"
 
 properties:
   display-name:
